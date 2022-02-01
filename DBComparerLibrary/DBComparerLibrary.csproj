@@ -36,14 +36,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComparerException.cs" />
     <Compile Include="DBSchema\Column.cs" />
     <Compile Include="DBSchema\Index.cs" />
     <Compile Include="DBSchema\Schema.cs" />
     <Compile Include="DBSchema\SQLConstraintsEnum.cs" />
     <Compile Include="DBSchema\SQLDateTypeEnum.cs" />
     <Compile Include="DBSchema\Table.cs" />
+    <Compile Include="DBSQLExecutor\ISQLExecutor.cs" />
+    <Compile Include="DBSQLExecutor\ISQLGetConnection.cs" />
+    <Compile Include="DBSQLExecutor\SQLConnection.cs" />
+    <Compile Include="DBSQLExecutor\SQLExecutor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DBSchema\View.cs" />
+    <Compile Include="Worker.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

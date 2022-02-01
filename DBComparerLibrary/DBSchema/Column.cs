@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 namespace DBComparerLibrary.DBSchema
 {
-    internal class Column
+    public class Column
     {
         public Column(string name, SQLDateTypeEnum type, ColumnInfo dopInfo = null)
         {
@@ -17,7 +14,7 @@ namespace DBComparerLibrary.DBSchema
         public SQLDateTypeEnum Type { get; }
         public ColumnInfo DopInfo { get; }
     }
-    internal class ColumnInfo 
+    public class ColumnInfo 
     {
         public SQLConstraintsEnum SQLConstraintsEnum { get; }
         public int param1 { get; }
