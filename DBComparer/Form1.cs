@@ -13,6 +13,8 @@ namespace DBComparer
         public Form1()
         {
             InitializeComponent();
+
+
         }
     }
 }

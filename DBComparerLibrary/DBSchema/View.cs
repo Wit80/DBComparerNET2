@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DBComparerLibrary
+namespace DBComparerLibrary.DBSchema
 {
-    public class Class1
+    internal class View
     {
     }
 }

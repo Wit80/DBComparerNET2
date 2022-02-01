@@ -67,5 +67,11 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DBComparerLibrary\DBComparerLibrary.csproj">
+      <Project>{84abf696-2a28-4b2c-aa66-7d5ffa5303b3}</Project>
+      <Name>DBComparerLibrary</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
