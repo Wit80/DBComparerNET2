@@ -13,6 +13,7 @@ namespace DBComparerLibrary.DBSQLExecutor
             try
             {
                 adapter.Fill(dsRet);
+                conn.Close();
                 return dsRet;
             }
             catch (InvalidOperationException ex) 

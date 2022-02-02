@@ -3,29 +3,29 @@ namespace DBComparerLibrary.DBSchema
 {
     public class Column
     {
-        public Column(string name, SQLDateTypeEnum type, ColumnInfo dopInfo = null)
+        public Column(string name, int type, int precision = 0, int scale = 0, int maxSymb = 0)
         {
             Name = name;
             Type = type;
-            DopInfo = dopInfo;
+            DopInfo = new ColumnInfo(precision,scale,maxSymb);
         }
 
         public string Name { get;}
-        public SQLDateTypeEnum Type { get; }
-        public ColumnInfo DopInfo { get; }
+        public int Type { get; }
+        public ColumnInfo DopInfo;
     }
     public class ColumnInfo 
     {
-        public SQLConstraintsEnum SQLConstraintsEnum { get; }
-        public int param1 { get; }
-        public int param2 { get; }
-        public string UserTypeName { get; }
+        public SQLConstraintsEnum SQLConstraintsEnum;
+        public int precision { get; }
+        public int scale { get; }
+        public int maxSymb { get; }
 
-        public ColumnInfo(int param1 = 0, int param2 = 0, string userTypeName = "", SQLConstraintsEnum constraintsEnum = SQLConstraintsEnum.none)
+        public ColumnInfo(int precision = 0, int scale = 0, int maxSymb = 0, SQLConstraintsEnum constraintsEnum = SQLConstraintsEnum.none)
         {
-            this.param1 = param1;
-            this.param2 = param2;
-            UserTypeName = userTypeName;
+            this.precision = precision;
+            this.scale = scale;
+            this.maxSymb = maxSymb;
             SQLConstraintsEnum = constraintsEnum;
         }
     }
