@@ -15,6 +15,10 @@ namespace DBComparerLibrary.DBSchema
         schemaName,
         objectType,
         dtCreate,
-        dtModif
+        dtModif,
+        parentObjId,
+        tblName,
+        tblCreate,
+        tblModify
     }
 }

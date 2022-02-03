@@ -1,32 +1,40 @@
 ﻿
+using System;
+
 namespace DBComparerLibrary.DBSchema
 {
-    public class Column
+    public class Column : IEquatable<Column>
     {
         public Column(string name, int type, int precision = 0, int scale = 0, int maxSymb = 0)
         {
             Name = name;
             Type = type;
-            DopInfo = new ColumnInfo(precision,scale,maxSymb);
+            this.precision = precision;
+            this.scale = scale;
+            this.maxSymb = maxSymb;
         }
 
         public string Name { get;}
         public int Type { get; }
-        public ColumnInfo DopInfo;
-    }
-    public class ColumnInfo 
-    {
-        public SQLConstraintsEnum SQLConstraintsEnum;
         public int precision { get; }
         public int scale { get; }
         public int maxSymb { get; }
 
-        public ColumnInfo(int precision = 0, int scale = 0, int maxSymb = 0, SQLConstraintsEnum constraintsEnum = SQLConstraintsEnum.none)
+        public bool Equals(Column other)
         {
-            this.precision = precision;
-            this.scale = scale;
-            this.maxSymb = maxSymb;
-            SQLConstraintsEnum = constraintsEnum;
+            if (other == null)
+                return false;
+
+            return this.Type.Equals(other.Type) &&
+                this.precision.Equals(other.precision) &&
+                this.scale.Equals(other.scale) &&
+                this.maxSymb.Equals(other.maxSymb) &&
+                (
+                    object.ReferenceEquals(this.Name, other.Name) ||
+                    this.Name != null &&
+                    this.Name.Equals(other.Name)
+                );
         }
     }
+    
 }

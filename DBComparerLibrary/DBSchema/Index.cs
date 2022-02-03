@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace DBComparerLibrary.DBSchema
 {
-    public class Index
+    public class Index: IEquatable<Index>
     {
 
         public string indexName { get; }
@@ -18,6 +18,19 @@ namespace DBComparerLibrary.DBSchema
             this.dtCreate = dtCreate;
             this.dtUpdate = dtUpdate;
             columns = new List<string> { column };
+        }
+
+        public bool Equals(Index other)
+        {
+            if (other == null)
+                return false;
+
+            return Comparers.EnumEquals(this.columns, other.columns) &&
+                (
+                    object.ReferenceEquals(this.indexName, other.indexName) ||
+                    this.indexName != null &&
+                    this.indexName.Equals(other.indexName)
+                );
         }
     }
 }

@@ -9,6 +9,7 @@ namespace DBComparerLibrary.DBSchema
         PRIMARY_KEY,    /*PK*/
         UNIQUE,         /*UQ*/
         FOREIGN_KEY,    /*F*/
-        CHECK           /*C*/
+        CHECK,          /*C*/
+        NONE
     }
 }
