@@ -24,8 +24,8 @@ namespace DBComparerLibrary.DBSchema
             if (other == null)
                 return false;
 
-            return Comparers.DictEquals(this.tables, other.tables) &&
-                Comparers.DictEquals(this.views, other.views) &&
+            return CollectionComparer.DictEquals(this.tables, other.tables) &&
+                CollectionComparer.DictEquals(this.views, other.views) &&
                 (
                     object.ReferenceEquals(this.Name, other.Name) ||
                     this.Name != null &&

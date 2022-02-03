@@ -16,8 +16,6 @@ namespace DBComparerLibrary
         }
         public DataBase RunProcess() 
         {
-            
-            
             wrk.GetDataFromDB();
             if (0 == wrk.dsObjects.Tables[0].Rows.Count)
             {//прочитано 0 объектов

@@ -39,11 +39,11 @@ namespace DBComparerLibrary.DBSchema
                     this.Name.Equals(other.Name)
                 )
                 &&
-                Comparers.DictEquals(this.columns, other.columns)
+                CollectionComparer.DictEquals(this.columns, other.columns)
                 &&
-                Comparers.DictEquals(this.indexes, other.indexes)
+                CollectionComparer.DictEquals(this.indexes, other.indexes)
                 &&
-                Comparers.EnumEquals(this.constraints, other.constraints);
+                CollectionComparer.EnumEquals(this.constraints, other.constraints);
         }
     }
 }

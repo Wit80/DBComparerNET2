@@ -37,7 +37,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ComparerException.cs" />
-    <Compile Include="Comparers.cs" />
+    <Compile Include="CollectionComparer.cs" />
     <Compile Include="DataProcessor.cs" />
     <Compile Include="DBSchema\Column.cs" />
     <Compile Include="DBSchema\Constraints.cs" />

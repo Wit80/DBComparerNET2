@@ -10,22 +10,22 @@ namespace DBComparerLibrary
     public class DBsysWorker
     {
         public DataSet dsObjects;
-        public int ObjectsOKflag = 0;
+        public bool ObjectsOKflag = false;
         public string ObjectsExceptionText;
         //public DataSet dsColumns;
         public Dictionary<UInt64, Dictionary<string, Column>> dictColumns;
-        public int ColumnsOKflag = 0;
+        public bool ColumnsOKflag = false;
         public string ColumnsExceptionText;
         //public DataSet dsIndexes;
         public Dictionary<UInt64, Dictionary<string, Index>> dictIndexes;
-        public int IndexesOKflag = 0;
+        public bool IndexesOKflag = false;
         public string IndexesExceptionText;
         //public DataSet dsRowsCount;
         public Dictionary<UInt64, int> dictRowsCount;
-        public int RowsCountOKflag = 0;
+        public bool RowsCountOKflag = false;
         public string RowsCountExceptionText;
         public Dictionary<int, string> dictTypes;
-        public int TypesOKflag = 0;
+        public bool TypesOKflag = false;
         public string TypesExceptionText;
 
         private string _connString;
@@ -60,11 +60,11 @@ namespace DBComparerLibrary
         }
         public void GetDataFromDB() 
         {
-            Thread t_sys = new Thread(new ThreadStart(GetSysObjects));
-            Thread t_col = new Thread(new ThreadStart(GetSysColumns));
-            Thread t_ind = new Thread(new ThreadStart(GetSysIndexes));
-            Thread t_rows = new Thread(new ThreadStart(GetSysRowsCount));
-            Thread t_types = new Thread(new ThreadStart(GetSysTypes));
+            Thread t_sys = new Thread(new ThreadStart(GetSysObjects)) { IsBackground = true };
+            Thread t_col = new Thread(new ThreadStart(GetSysColumns)) { IsBackground = true };
+            Thread t_ind = new Thread(new ThreadStart(GetSysIndexes)) { IsBackground = true };
+            Thread t_rows = new Thread(new ThreadStart(GetSysRowsCount)) { IsBackground = true };
+            Thread t_types = new Thread(new ThreadStart(GetSysTypes)) { IsBackground = true };
 
             t_sys.Start();
             t_col.Start();
@@ -73,25 +73,25 @@ namespace DBComparerLibrary
             t_types.Start();
             Thread.Sleep(100);
 
-            while (!(1 == ColumnsOKflag && 1 == ObjectsOKflag && 1 == IndexesOKflag && 1 == RowsCountOKflag && 1 == TypesOKflag))
+            while (!( ThreadState.Stopped == t_sys.ThreadState  && ThreadState.Stopped == t_col.ThreadState 
+                && ThreadState.Stopped == t_ind.ThreadState && ThreadState.Stopped == t_rows.ThreadState && ThreadState.Stopped == t_types.ThreadState))
             {
-                if (-1 == ObjectsOKflag)
-                    throw new ComparerException(ObjectsExceptionText);
-                if(-1 == ColumnsOKflag)
-                    throw new ComparerException(ColumnsExceptionText);
-                if (-1 == IndexesOKflag)
-                    throw new ComparerException(IndexesExceptionText);
-                if (-1 == RowsCountOKflag)
-                    throw new ComparerException(RowsCountExceptionText);
-                if (-1 == TypesOKflag)
-                    throw new ComparerException(TypesExceptionText);
-
                 Thread.Sleep(1000);
-
             }
+            if (!ObjectsOKflag)
+                throw new ComparerException(ObjectsExceptionText);
+            if (!ColumnsOKflag)
+                throw new ComparerException(ColumnsExceptionText);
+            if (!IndexesOKflag)
+                throw new ComparerException(IndexesExceptionText);
+            if (!RowsCountOKflag)
+                throw new ComparerException(RowsCountExceptionText);
+            if (!TypesOKflag)
+                throw new ComparerException(TypesExceptionText);
         }
         private void GetSysObjects() 
         {
+            ObjectsOKflag = false;
             string sSQL = @"
 SELECT @@ServerName AS serverName,
         DB_NAME() AS dbName,
@@ -133,14 +133,14 @@ WHERE o.type in ('U','V','PK','UQ','F','C') ";
             }
             catch (Exception ex) 
             {
-                ObjectsOKflag = -1;
                 ObjectsExceptionText = "Ошибка GetSysObjects. Тип исключения: " + ex.GetType() + " : " + ex.Message;
             }
-            ObjectsOKflag = 1;
+            ObjectsOKflag = true;
         }
 
         private void GetSysColumns()
         {
+            ColumnsOKflag = false;
             string sSQL = @"
 SELECT  c.object_id as objectId,
         c.name as columnName,
@@ -160,13 +160,13 @@ FROM sys.columns as c
             }
             catch (Exception ex)
             {
-                ColumnsOKflag = -1;
                 ColumnsExceptionText = "Ошибка GetSysColumns. Тип исключения: " + ex.GetType() + " : " + ex.Message;
             }
-            ColumnsOKflag = 1;
+            ColumnsOKflag = true;
         }
         private void GetSysIndexes()
         {
+            IndexesOKflag = false;
             string sSQL = @"
 SELECT  o.object_id as objectId,
         o.create_date as dtCreate,
@@ -185,14 +185,14 @@ WHERE o.Type = 'U'
             }
             catch (Exception ex)
             {
-                IndexesOKflag = -1;
                 IndexesExceptionText = "Ошибка GetSysIndexes. Тип исключения: " + ex.GetType() + " : " + ex.Message;
             }
-            IndexesOKflag = 1;
+            IndexesOKflag = true;
         }
 
         private void GetSysRowsCount()
         {
+            RowsCountOKflag = false;
             string sSQL = @"
 select p.object_id as objectId,
         SUM(p.Rows) AS rowsCount
@@ -210,13 +210,13 @@ GROUP BY p.object_id ,
             }
             catch (Exception ex)
             {
-                RowsCountOKflag = -1;
                 RowsCountExceptionText = "Ошибка GetSysRowsCount. Тип исключения: " + ex.GetType() + " : " + ex.Message;
             }
-            RowsCountOKflag = 1;
+            RowsCountOKflag = true;
         }
         private void GetSysTypes()
         {
+            TypesOKflag = false;
             string sSQL = @"
 select t.user_type_id as typeID,
 		s.name + '.' + t.name as typeName
@@ -235,10 +235,9 @@ from sys.types as t
             }
             catch (Exception ex)
             {
-                TypesOKflag = -1;
                 TypesExceptionText = "Ошибка GetSysTypes. Тип исключения: " + ex.GetType() + " : " + ex.Message;
             }
-            TypesOKflag = 1;
+            TypesOKflag = true;
         }
 
         private DataSet execute(string sSQL) 

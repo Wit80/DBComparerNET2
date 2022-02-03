@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DBComparerLibrary
 {
-    public static class Comparers
+    public static class CollectionComparer
     {
         public static bool EnumEquals<T>(List<T> list1, List<T> list2)
             where T : IEquatable<T>
@@ -24,37 +24,6 @@ namespace DBComparerLibrary
                     return false;
             }
             return true;
-
-            /*var cnt = new Dictionary<T, int>();
-            foreach (T s in list1)
-            {
-                if (cnt.ContainsKey(s))
-                {
-                    cnt[s]++;
-                }
-                else
-                {
-                    cnt.Add(s, 1);
-                }
-            }
-            foreach (T s in list2)
-            {
-                if (cnt.ContainsKey(s))
-                {
-                    cnt[s]--;
-                }
-                else
-                {
-
-                    return false;
-                }
-            }
-            foreach (var value in cnt.Values)
-            {
-                if (0 != value)
-                    return false;
-            }
-            return true;*/
         }
 
         public static bool DictEquals<TKey, TValue>(IDictionary<TKey, TValue> dict1, IDictionary<TKey, TValue> dict2) 

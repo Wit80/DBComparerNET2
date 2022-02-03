@@ -25,7 +25,7 @@ namespace DBComparerLibrary.DBSchema
             if (other == null)
                 return false;
 
-            return Comparers.EnumEquals(this.columns, other.columns) &&
+            return CollectionComparer.EnumEquals(this.columns, other.columns) &&
                 (
                     object.ReferenceEquals(this.indexName, other.indexName) ||
                     this.indexName != null &&
