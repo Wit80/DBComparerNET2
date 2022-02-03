@@ -18,7 +18,9 @@ namespace DBComparer
         public Form1()
         {
             InitializeComponent();
-            
+            ConnectionForm connectionForm = new ConnectionForm();
+            DialogResult dr = connectionForm.ShowDialog();
+            /*
 
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
@@ -45,7 +47,7 @@ namespace DBComparer
                 ts.Hours, ts.Minutes, ts.Seconds,
                 ts.Milliseconds / 10);
             
-           MessageBox.Show(elapsedTime);
+           MessageBox.Show(elapsedTime);*/
 
         }
     }

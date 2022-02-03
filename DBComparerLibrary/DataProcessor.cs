@@ -2,12 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Text;
 
 namespace DBComparerLibrary
 {
     public class DataProcessor
     {
+
         private DBsysWorker wrk;
 
         public DataProcessor(string connString)
@@ -19,18 +21,28 @@ namespace DBComparerLibrary
             wrk.GetDataFromDB();
             if (0 == wrk.dsObjects.Tables[0].Rows.Count)
             {//прочитано 0 объектов
+                throw new ComparerException("Из БД прочитано 0 объектов ");
             }
             DataBase db = new DataBase(wrk.dsObjects.Tables[0].Rows[0][(int)SQLObjectFieldsEnum.serverName].ToString(), 
                 wrk.dsObjects.Tables[0].Rows[0][(int)SQLObjectFieldsEnum.dbName].ToString());
             foreach (DataRow dr in wrk.dsObjects.Tables[0].Rows)
             {
-                RowProcess(db, dr);
+                try
+                {
+                    RowProcess(db, dr);
+                }
+                catch (Exception ex) 
+                {
+                    throw new ComparerException("Ошибка при обработке строки.Тип исключения: " + ex.GetType() + " : " + ex.Message);
+                }
                 
             }
             return db;
 
 
         }
+
+       
 
 
         private void RowProcess(DataBase db, DataRow dr) 
