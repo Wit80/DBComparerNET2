@@ -5,13 +5,14 @@ namespace DBComparerLibrary.DBSchema
 {
     public class Column : IEquatable<Column>
     {
-        public Column(string name, int type, int precision = 0, int scale = 0, int maxSymb = 0)
+        public Column(string name, int type, int precision = 0, int scale = 0, int maxSymb = 0, bool isNullable = true)
         {
             Name = name;
             Type = type;
             this.precision = precision;
             this.scale = scale;
             this.maxSymb = maxSymb;
+            this.isNullable = isNullable;
         }
 
         public string Name { get;}
@@ -19,6 +20,7 @@ namespace DBComparerLibrary.DBSchema
         public int precision { get; }
         public int scale { get; }
         public int maxSymb { get; }
+        public bool isNullable { get; }
 
         public bool Equals(Column other)
         {
@@ -26,6 +28,7 @@ namespace DBComparerLibrary.DBSchema
                 return false;
 
             return this.Type.Equals(other.Type) &&
+                this.isNullable.Equals(other.isNullable) &&
                 this.precision.Equals(other.precision) &&
                 this.scale.Equals(other.scale) &&
                 this.maxSymb.Equals(other.maxSymb) &&

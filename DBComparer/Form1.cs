@@ -20,8 +20,14 @@ namespace DBComparer
             InitializeComponent();
             ConnectionForm connectionForm = new ConnectionForm();
             DialogResult dr = connectionForm.ShowDialog();
+            if (dr == DialogResult.OK)
+            {
+                MessageBox.Show(connectionForm.ConnectionString1);
+                MessageBox.Show(connectionForm.ConnectionString2);
+            }
+            return;
+            
             /*
-
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
 
@@ -38,6 +44,7 @@ namespace DBComparer
 
 
             bool res = db1.Equals(db2);
+            /*
 
             stopWatch.Stop();
             TimeSpan ts = stopWatch.Elapsed;

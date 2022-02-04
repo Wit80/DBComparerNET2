@@ -49,6 +49,7 @@
     <Compile Include="DBSchema\SQLDateTypeEnum.cs" />
     <Compile Include="DBSchema\SQLObjectFieldsEnum.cs" />
     <Compile Include="DBSchema\Table.cs" />
+    <Compile Include="DBSQLExecutor\ConncetionString.cs" />
     <Compile Include="DBSQLExecutor\ISQLExecutor.cs" />
     <Compile Include="DBSQLExecutor\ISQLGetConnection.cs" />
     <Compile Include="DBSQLExecutor\SQLConnection.cs" />

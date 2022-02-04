@@ -30,10 +30,21 @@ namespace DBComparerLibrary.DBSQLExecutor
         {
 
             SqlConnection _sqlConnection = new SqlConnection(connString);
+            SqlCommand command;
+            SqlDataReader reader;
 
-            _sqlConnection.Open();
-            SqlCommand command = new SqlCommand("select name from sys.databases", _sqlConnection);
-            SqlDataReader reader = command.ExecuteReader();
+            try
+            {
+                _sqlConnection.Open();
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
+            command = new SqlCommand("select name from sys.databases", _sqlConnection);
+            reader = command.ExecuteReader();
+            
             List<string> schReturn = new List<string>();
             while (reader.Read())
             {

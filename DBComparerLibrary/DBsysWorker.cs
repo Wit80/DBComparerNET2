@@ -146,9 +146,10 @@ SELECT  c.object_id as objectId,
         c.name as columnName,
         c.system_type_id as columnTypeId,
         t.name as columnTypName,
-		c.precision,
-		c.scale,
-		columnproperty(c.object_id, c.name, 'Precision') maxSymbols
+		c.precision as prec,
+		c.scale as scale,
+		columnproperty(c.object_id, c.name, 'Precision') as maxSymbols,
+		c.is_nullable as isnullable
 FROM sys.columns as c
         INNER JOIN sys.types t ON c.user_type_id = t.user_type_id
         INNER JOIN sys.objects o ON c.object_id = o.object_id
@@ -291,14 +292,14 @@ from sys.types as t
                     if (!dictRet[Convert.ToUInt64(dr[0])].ContainsKey(dr[1].ToString()))
                     {
                         dictRet[Convert.ToUInt64(dr[0])].Add(dr[1].ToString(),
-                            new Column(dr[1].ToString(), Convert.ToInt32(dr[2]), Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6])));
+                            new Column(dr[1].ToString(), Convert.ToInt32(dr[2]), Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7])));
                     }
                 }
                 else
                 {
                     dictRet.Add(Convert.ToUInt64(dr[0]),
                         new Dictionary<string, Column>() { { dr[1].ToString(),
-                                new Column(dr[1].ToString(),Convert.ToInt32(dr[2]), Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6])) } });
+                                new Column(dr[1].ToString(),Convert.ToInt32(dr[2]), Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]),Convert.ToBoolean(dr[7])) } });
                 }
             }
             return dictRet;
