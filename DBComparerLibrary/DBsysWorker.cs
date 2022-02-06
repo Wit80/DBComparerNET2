@@ -24,9 +24,6 @@ namespace DBComparerLibrary
         public Dictionary<UInt64, int> dictRowsCount;
         public bool RowsCountOKflag = false;
         public string RowsCountExceptionText;
-        public Dictionary<int, string> dictTypes;
-        public bool TypesOKflag = false;
-        public string TypesExceptionText;
 
         private string _connString;
 
@@ -60,21 +57,20 @@ namespace DBComparerLibrary
         }
         public void GetDataFromDB() 
         {
+
             Thread t_sys = new Thread(new ThreadStart(GetSysObjects)) { IsBackground = true };
             Thread t_col = new Thread(new ThreadStart(GetSysColumns)) { IsBackground = true };
             Thread t_ind = new Thread(new ThreadStart(GetSysIndexes)) { IsBackground = true };
             Thread t_rows = new Thread(new ThreadStart(GetSysRowsCount)) { IsBackground = true };
-            Thread t_types = new Thread(new ThreadStart(GetSysTypes)) { IsBackground = true };
 
             t_sys.Start();
             t_col.Start();
             t_ind.Start();
             t_rows.Start();
-            t_types.Start();
             Thread.Sleep(100);
 
             while (!( ThreadState.Stopped == t_sys.ThreadState  && ThreadState.Stopped == t_col.ThreadState 
-                && ThreadState.Stopped == t_ind.ThreadState && ThreadState.Stopped == t_rows.ThreadState && ThreadState.Stopped == t_types.ThreadState))
+                && ThreadState.Stopped == t_ind.ThreadState && ThreadState.Stopped == t_rows.ThreadState ))
             {
                 Thread.Sleep(1000);
             }
@@ -86,8 +82,6 @@ namespace DBComparerLibrary
                 throw new ComparerException(IndexesExceptionText);
             if (!RowsCountOKflag)
                 throw new ComparerException(RowsCountExceptionText);
-            if (!TypesOKflag)
-                throw new ComparerException(TypesExceptionText);
         }
         private void GetSysObjects() 
         {
@@ -144,17 +138,26 @@ WHERE o.type in ('U','V','PK','UQ','F','C') ";
             string sSQL = @"
 SELECT  c.object_id as objectId,
         c.name as columnName,
-        c.system_type_id as columnTypeId,
-        t.name as columnTypName,
+        c.user_type_id as columnTypeId,
+        tn.typeName as columnTypName,
 		c.precision as prec,
 		c.scale as scale,
 		columnproperty(c.object_id, c.name, 'Precision') as maxSymbols,
-		c.is_nullable as isnullable
+		c.is_nullable as isnullable		
 FROM sys.columns as c
-        INNER JOIN sys.types t ON c.user_type_id = t.user_type_id
         INNER JOIN sys.objects o ON c.object_id = o.object_id
-    INNER JOIN sys.schemas s ON o.schema_id = s.schema_id
-	order by s.name, o.name";
+		INNER JOIN sys.schemas s ON o.schema_id = s.schema_id
+		INNER JOIN (select t.user_type_id as typeID,
+		s.name + '.' + t.name as typeName
+from sys.types as t
+	INNER JOIN sys.schemas s ON t.schema_id = s.schema_id 
+	where s.name != 'sys'
+	union
+select t.user_type_id as typeID,
+		t.name  as typeName
+from sys.types as t
+	INNER JOIN sys.schemas s ON t.schema_id = s.schema_id 
+	where s.name = 'sys') tn on c.user_type_id = tn.typeID";
             try
             {
                 dictColumns = GetColumnsDictionary(execute(sSQL));
@@ -215,31 +218,7 @@ GROUP BY p.object_id ,
             }
             RowsCountOKflag = true;
         }
-        private void GetSysTypes()
-        {
-            TypesOKflag = false;
-            string sSQL = @"
-select t.user_type_id as typeID,
-		s.name + '.' + t.name as typeName
-from sys.types as t
-	INNER JOIN sys.schemas s ON t.schema_id = s.schema_id 
-	where s.name != 'sys'
-	union all
-select t.user_type_id as typeID,
-		t.name  as typeName
-from sys.types as t
-	INNER JOIN sys.schemas s ON t.schema_id = s.schema_id 
-	where s.name = 'sys'";
-            try
-            {
-                dictTypes = GetTypesDictionary(execute(sSQL));
-            }
-            catch (Exception ex)
-            {
-                TypesExceptionText = "Ошибка GetSysTypes. Тип исключения: " + ex.GetType() + " : " + ex.Message;
-            }
-            TypesOKflag = true;
-        }
+       
 
         private DataSet execute(string sSQL) 
         {
@@ -292,14 +271,14 @@ from sys.types as t
                     if (!dictRet[Convert.ToUInt64(dr[0])].ContainsKey(dr[1].ToString()))
                     {
                         dictRet[Convert.ToUInt64(dr[0])].Add(dr[1].ToString(),
-                            new Column(dr[1].ToString(), Convert.ToInt32(dr[2]), Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7])));
+                            new Column(dr[1].ToString(), Convert.ToInt32(dr[2]), dr[3].ToString(), Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7])));
                     }
                 }
                 else
                 {
                     dictRet.Add(Convert.ToUInt64(dr[0]),
                         new Dictionary<string, Column>() { { dr[1].ToString(),
-                                new Column(dr[1].ToString(),Convert.ToInt32(dr[2]), Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]),Convert.ToBoolean(dr[7])) } });
+                                new Column(dr[1].ToString(),Convert.ToInt32(dr[2]),dr[3].ToString(), Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]),Convert.ToBoolean(dr[7])) } });
                 }
             }
             return dictRet;

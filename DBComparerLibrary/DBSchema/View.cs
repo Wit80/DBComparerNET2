@@ -23,8 +23,7 @@ namespace DBComparerLibrary.DBSchema
             if (other == null)
                 return false;
 
-            return this.objectId.Equals(other.objectId) &&
-                (
+            return (
                     object.ReferenceEquals(this.Name, other.Name) ||
                     this.Name != null &&
                     this.Name.Equals(other.Name)

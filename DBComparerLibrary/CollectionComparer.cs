@@ -6,6 +6,23 @@ namespace DBComparerLibrary
 {
     public static class CollectionComparer
     {
+        public static List<T> GetDifference<T>(List<T> list1, List<T> list2) 
+        {
+            List<T> difference = new List<T>();
+            foreach (T item in list1) 
+            {
+                if(!list2.Contains(item))
+                    difference.Add(item);
+            }
+            foreach (T item in list2)
+            {
+                if (!list1.Contains(item))
+                    difference.Add(item);
+            }
+
+            return difference;
+        }
+
         public static bool EnumEquals<T>(List<T> list1, List<T> list2)
             where T : IEquatable<T>
         {
@@ -53,5 +70,6 @@ namespace DBComparerLibrary
 
             return true;
         }
+       
     }
 }

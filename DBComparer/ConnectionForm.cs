@@ -2,10 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Data.SqlClient;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 
 namespace DBComparer
@@ -108,22 +104,18 @@ namespace DBComparer
                 string msg = String.Format("Ошибка при получении списка баз данных сервера: {0}", e.Error.Message);
                 MessageBox.Show(msg);
             }
+            
+            List<string> DBs = (List<string>)e.Result;
+            if (DBs is null)
+            {
+                cbDatabase1.Items.Clear();
+                cbDatabase1.Items.Add(DBListNoLoaded);
+            }
             else
             {
-                
-
-                List<string> DBs = (List<string>)e.Result;
-                if (DBs is null)
+                foreach (string s in DBs)
                 {
-                    cbDatabase1.Items.Clear();
-                    cbDatabase1.Items.Add(DBListNoLoaded);
-                }
-                else
-                {
-                    foreach (string s in DBs)
-                    {
-                        cbDatabase1.Items.Add(s);
-                    }
+                    cbDatabase1.Items.Add(s);
                 }
             }
         }
@@ -170,21 +162,19 @@ namespace DBComparer
             {
                 string msg = String.Format("Ошибка при получении списка баз данных сервера: {0}", e.Error.Message);
                 MessageBox.Show(msg);
+                return;
+            }
+            List<string> DBs = (List<string>)e.Result;
+            if (DBs is null)
+            {
+                cbDatabase2.Items.Clear();
+                cbDatabase2.Items.Add(DBListNoLoaded);
             }
             else
             {
-                List<string> DBs = (List<string>)e.Result;
-                if (DBs is null)
+                foreach (string s in DBs)
                 {
-                    cbDatabase2.Items.Clear();
-                    cbDatabase2.Items.Add(DBListNoLoaded);
-                }
-                else
-                {
-                    foreach (string s in DBs)
-                    {
-                        cbDatabase2.Items.Add(s);
-                    }
+                    cbDatabase2.Items.Add(s);
                 }
             }
         }
