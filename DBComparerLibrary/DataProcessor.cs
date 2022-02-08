@@ -122,7 +122,7 @@ namespace DBComparerLibrary
                     Convert.ToDateTime(dr[(int)SQLObjectFieldsEnum.tblModify]), wrk.GetColums(objId), wrk.GetIndexes(objId)));
             }
             tbls[parentObjName]
-                    .constraints.Add(new Constraints(dr[(int)SQLObjectFieldsEnum.objectName].ToString(),
+                    .constraints.Add(dr[(int)SQLObjectFieldsEnum.objectName].ToString(),new Constraints(dr[(int)SQLObjectFieldsEnum.objectName].ToString(),
                             Convert.ToDateTime(dr[(int)SQLObjectFieldsEnum.dtCreate]),
                             Convert.ToDateTime(dr[(int)SQLObjectFieldsEnum.dtModif]), constrType));
         }        

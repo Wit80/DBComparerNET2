@@ -48,6 +48,7 @@
     <Compile Include="DBSchema\SQLConstraintsEnum.cs" />
     <Compile Include="DBSchema\SQLDateTypeEnum.cs" />
     <Compile Include="DBSchema\SQLObjectFieldsEnum.cs" />
+    <Compile Include="DBSchema\SQLTableItemEnum.cs" />
     <Compile Include="DBSchema\Table.cs" />
     <Compile Include="DBSQLExecutor\ConncetionString.cs" />
     <Compile Include="DBSQLExecutor\ISQLExecutor.cs" />

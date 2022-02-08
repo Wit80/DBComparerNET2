@@ -14,7 +14,7 @@ namespace DBComparerLibrary.DBSchema
             this.indexes = indexes;
             dtCreate = Create;
             dtUpdate = Update;
-            constraints = new List<Constraints>();
+            constraints = new Dictionary<string, Constraints>();
         }
 
         UInt64 objectId { get; }
@@ -24,7 +24,7 @@ namespace DBComparerLibrary.DBSchema
         public DateTime dtUpdate { get; }
         public Dictionary<string,Column> columns { get;}
         public Dictionary<string,Index> indexes { get; }
-        public List<Constraints> constraints { get; set; }
+        public Dictionary<string,Constraints> constraints { get; set; }
 
         public bool Equals(Table other)
         {
@@ -43,7 +43,7 @@ namespace DBComparerLibrary.DBSchema
                 &&
                 CollectionComparer.DictEquals(this.indexes, other.indexes)
                 &&
-                CollectionComparer.EnumEquals(this.constraints, other.constraints);
+                CollectionComparer.DictEquals(this.constraints, other.constraints);
         }
     }
 }
