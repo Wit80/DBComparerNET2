@@ -37,26 +37,36 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ComparerException.cs" />
-    <Compile Include="CollectionComparer.cs" />
+    <Compile Include="Comparer.cs" />
     <Compile Include="DataProcessor.cs" />
     <Compile Include="DBSchema\Column.cs" />
-    <Compile Include="DBSchema\Constraints.cs" />
-    <Compile Include="DBSchema\ConstraintsTypeEnum.cs" />
     <Compile Include="DBSchema\DataBase.cs" />
+    <Compile Include="DBSchema\ddColumn.cs" />
+    <Compile Include="DBSchema\ddConstraints.cs" />
+    <Compile Include="DBSchema\ddConstraintsTypeEnum.cs" />
+    <Compile Include="DBSchema\ddDataBase.cs" />
+    <Compile Include="DBSchema\ddIndex.cs" />
+    <Compile Include="DBSchema\ddSchema.cs" />
+    <Compile Include="DBSchema\ForeignKey.cs" />
+    <Compile Include="DBSchema\ForeignKeyRefs.cs" />
     <Compile Include="DBSchema\Index.cs" />
+    <Compile Include="DBSchema\IndexTypeEnum.cs" />
     <Compile Include="DBSchema\Schema.cs" />
     <Compile Include="DBSchema\SQLConstraintsEnum.cs" />
     <Compile Include="DBSchema\SQLDateTypeEnum.cs" />
     <Compile Include="DBSchema\SQLObjectFieldsEnum.cs" />
+    <Compile Include="DBSchema\SQLs.cs" />
     <Compile Include="DBSchema\SQLTableItemEnum.cs" />
+    <Compile Include="DBSchema\ddTable.cs" />
     <Compile Include="DBSchema\Table.cs" />
+    <Compile Include="DBSchema\View.cs" />
     <Compile Include="DBSQLExecutor\ConncetionString.cs" />
     <Compile Include="DBSQLExecutor\ISQLExecutor.cs" />
     <Compile Include="DBSQLExecutor\ISQLGetConnection.cs" />
     <Compile Include="DBSQLExecutor\SQLConnection.cs" />
     <Compile Include="DBSQLExecutor\SQLExecutor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="DBSchema\View.cs" />
+    <Compile Include="DBSchema\ddView.cs" />
     <Compile Include="DBsysWorker.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

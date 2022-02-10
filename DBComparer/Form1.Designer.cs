@@ -387,7 +387,7 @@
             this.tpInfo.Controls.Add(this.splitContainer3);
             this.tpInfo.Location = new System.Drawing.Point(4, 22);
             this.tpInfo.Name = "tpInfo";
-            this.tpInfo.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tpInfo.Padding = new System.Windows.Forms.Padding(3);
             this.tpInfo.Size = new System.Drawing.Size(717, 540);
             this.tpInfo.TabIndex = 0;
             this.tpInfo.Text = "Информация";
@@ -407,17 +407,17 @@
             // 
             this.splitContainer3.Panel2.Controls.Add(this.richTextBox2);
             this.splitContainer3.Size = new System.Drawing.Size(711, 534);
-            this.splitContainer3.SplitterDistance = 236;
+            this.splitContainer3.SplitterDistance = 235;
             this.splitContainer3.TabIndex = 0;
             // 
             // richTextBox1
             // 
             this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.richTextBox1.Location = new System.Drawing.Point(0, 0);
-            this.richTextBox1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.richTextBox1.Margin = new System.Windows.Forms.Padding(2);
             this.richTextBox1.Name = "richTextBox1";
             this.richTextBox1.ReadOnly = true;
-            this.richTextBox1.Size = new System.Drawing.Size(236, 534);
+            this.richTextBox1.Size = new System.Drawing.Size(235, 534);
             this.richTextBox1.TabIndex = 0;
             this.richTextBox1.Text = "";
             this.richTextBox1.WordWrap = false;
@@ -426,10 +426,10 @@
             // 
             this.richTextBox2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.richTextBox2.Location = new System.Drawing.Point(0, 0);
-            this.richTextBox2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.richTextBox2.Margin = new System.Windows.Forms.Padding(2);
             this.richTextBox2.Name = "richTextBox2";
             this.richTextBox2.ReadOnly = true;
-            this.richTextBox2.Size = new System.Drawing.Size(471, 534);
+            this.richTextBox2.Size = new System.Drawing.Size(472, 534);
             this.richTextBox2.TabIndex = 0;
             this.richTextBox2.Text = "";
             this.richTextBox2.WordWrap = false;
@@ -439,8 +439,8 @@
             this.tpSQL.Controls.Add(this.splitContainer4);
             this.tpSQL.Location = new System.Drawing.Point(4, 22);
             this.tpSQL.Name = "tpSQL";
-            this.tpSQL.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tpSQL.Size = new System.Drawing.Size(811, 544);
+            this.tpSQL.Padding = new System.Windows.Forms.Padding(3);
+            this.tpSQL.Size = new System.Drawing.Size(717, 540);
             this.tpSQL.TabIndex = 1;
             this.tpSQL.Text = "SQL";
             this.tpSQL.UseVisualStyleBackColor = true;
@@ -449,7 +449,7 @@
             // 
             this.splitContainer4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer4.Location = new System.Drawing.Point(3, 3);
-            this.splitContainer4.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.splitContainer4.Margin = new System.Windows.Forms.Padding(2);
             this.splitContainer4.Name = "splitContainer4";
             // 
             // splitContainer4.Panel1
@@ -459,8 +459,8 @@
             // splitContainer4.Panel2
             // 
             this.splitContainer4.Panel2.Controls.Add(this.richTextBox4);
-            this.splitContainer4.Size = new System.Drawing.Size(805, 538);
-            this.splitContainer4.SplitterDistance = 276;
+            this.splitContainer4.Size = new System.Drawing.Size(711, 534);
+            this.splitContainer4.SplitterDistance = 243;
             this.splitContainer4.SplitterWidth = 2;
             this.splitContainer4.TabIndex = 0;
             // 
@@ -468,10 +468,10 @@
             // 
             this.richTextBox3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.richTextBox3.Location = new System.Drawing.Point(0, 0);
-            this.richTextBox3.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.richTextBox3.Margin = new System.Windows.Forms.Padding(2);
             this.richTextBox3.Name = "richTextBox3";
             this.richTextBox3.ReadOnly = true;
-            this.richTextBox3.Size = new System.Drawing.Size(276, 538);
+            this.richTextBox3.Size = new System.Drawing.Size(243, 534);
             this.richTextBox3.TabIndex = 0;
             this.richTextBox3.Text = "";
             this.richTextBox3.WordWrap = false;
@@ -480,10 +480,10 @@
             // 
             this.richTextBox4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.richTextBox4.Location = new System.Drawing.Point(0, 0);
-            this.richTextBox4.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.richTextBox4.Margin = new System.Windows.Forms.Padding(2);
             this.richTextBox4.Name = "richTextBox4";
             this.richTextBox4.ReadOnly = true;
-            this.richTextBox4.Size = new System.Drawing.Size(527, 538);
+            this.richTextBox4.Size = new System.Drawing.Size(466, 534);
             this.richTextBox4.TabIndex = 0;
             this.richTextBox4.Text = "";
             this.richTextBox4.WordWrap = false;

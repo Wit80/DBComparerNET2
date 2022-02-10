@@ -1,49 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace DBComparerLibrary.DBSchema
 {
+   
     public class Table : IEquatable<Table>
     {
-        public Table(ulong objectId, string name, int rowCount, DateTime Create, DateTime Update, Dictionary<string, Column> columns, Dictionary<string, Index> indexes)
+        public Table(string tableName, Dictionary<string, Column> columns, Dictionary<string, Index> indexes, Dictionary<string, ForeignKey> fk)
         {
-            this.objectId = objectId;
-            Name = name;
-            this.rowCount = rowCount;
+            TableName = tableName.Trim();
             this.columns = columns;
             this.indexes = indexes;
-            dtCreate = Create;
-            dtUpdate = Update;
-            constraints = new Dictionary<string, Constraints>();
+            this.foreignKeys = fk;
         }
 
-        UInt64 objectId { get; }
-        public string Name { get; }
-        public int rowCount { get; }
-        public DateTime dtCreate { get; }
-        public DateTime dtUpdate { get; }
-        public Dictionary<string,Column> columns { get;}
-        public Dictionary<string,Index> indexes { get; }
-        public Dictionary<string,Constraints> constraints { get; set; }
+        public string TableName { get; }
 
+        public Dictionary<string, Column> columns { get; }
+        public Dictionary<string, Index> indexes { get; }
+        public Dictionary<string, ForeignKey> foreignKeys { get; }
         public bool Equals(Table other)
         {
             if (other == null)
                 return false;
 
-            return this.objectId.Equals(other.objectId) &&
-                this.rowCount.Equals(other.rowCount) &&
-                (
-                    object.ReferenceEquals(this.Name, other.Name) ||
-                    this.Name != null &&
-                    this.Name.Equals(other.Name)
-                )
-                &&
-                CollectionComparer.DictEquals(this.columns, other.columns)
-                &&
-                CollectionComparer.DictEquals(this.indexes, other.indexes)
-                &&
-                CollectionComparer.DictEquals(this.constraints, other.constraints);
+            return Comparer.DictEquals(this.columns, other.columns) &&
+                Comparer.DictEquals(this.indexes, other.indexes) &&
+                Comparer.DictEquals(this.foreignKeys, other.foreignKeys) &&
+                Comparer.CompareStrings(this.TableName, other.TableName);
         }
     }
 }

@@ -1,49 +1,49 @@
-﻿
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace DBComparerLibrary.DBSchema
 {
+    
     public class Column : IEquatable<Column>
     {
-        public Column(string name, int type, string typeName, int precision = 0, int scale = 0, int maxSymb = 0, bool isNullable = true)
+        public Column(string columnName, string typeName, int maxLength, int precision, int scale, int maxSymb, bool isNullable, string definition = "", string DF_name = "")
         {
-            Name = name;
-            Type = type;
-            this.precision = precision;
-            this.scale = scale;
-            this.maxSymb = maxSymb;
-            this.isNullable = isNullable;
-            this.TypeName = typeName;
+            ColumnName = columnName.Trim();
+            TypeName = typeName.Trim();
+            MaxLength = maxLength;
+            Precision = precision;
+            Scale = scale;
+            MaxSymb = maxSymb;
+            IsNullable = isNullable;
+            DefaultVal = definition.Trim();
+            ConstraintName = DF_name.Trim();
         }
 
-        public string Name { get;}
-        public int Type { get; }
+        public string ColumnName { get; }
         public string TypeName { get; }
-        public int precision { get; }
-        public int scale { get; }
-        public int maxSymb { get; }
-        public bool isNullable { get; }
+        public int MaxLength { get; }
+        public int Precision { get; }
+        public int Scale { get; }
+        public int MaxSymb { get; }
+        public bool IsNullable { get; }
+        public string DefaultVal { get; }
+        public string ConstraintName { get; }
 
         public bool Equals(Column other)
         {
             if (other == null)
                 return false;
 
-            return this.isNullable.Equals(other.isNullable) &&
-                this.precision.Equals(other.precision) &&
-                this.scale.Equals(other.scale) &&
-                this.maxSymb.Equals(other.maxSymb) &&
-                (
-                    object.ReferenceEquals(this.Name, other.Name) ||
-                    this.Name != null &&
-                    this.Name.Equals(other.Name)
-                ) &&
-                (
-                    object.ReferenceEquals(this.TypeName, other.TypeName) ||
-                    this.TypeName != null &&
-                    this.TypeName.Equals(other.TypeName)
-                );
+            return this.MaxLength.Equals(other.MaxLength) &&
+                this.Precision.Equals(other.Precision) &&
+                this.Scale.Equals(other.Scale) &&
+                this.MaxSymb.Equals(other.MaxSymb) &&
+                this.IsNullable.Equals(other.IsNullable) &&
+                Comparer.CompareStrings(this.ColumnName, other.ColumnName) &&
+                Comparer.CompareStrings(this.DefaultVal, other.DefaultVal) &&
+                Comparer.CompareStrings(this.ConstraintName, other.ConstraintName) &&
+                Comparer.CompareStrings(this.TypeName, other.TypeName);
         }
     }
-    
 }

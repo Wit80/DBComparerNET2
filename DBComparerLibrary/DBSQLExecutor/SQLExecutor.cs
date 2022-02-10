@@ -26,6 +26,34 @@ namespace DBComparerLibrary.DBSQLExecutor
                 throw new ComparerException("Ошибка ArgumentException при заполнении DataSet: Тип исключения: " + ex.GetType() + " : " + ex.Message, ex);
             }
         }
+
+        public DataSet ExecuteSQL(SqlConnection conn, string sSQL1, string sSQL2, string sSQL3, string sSQL4) 
+        {
+            DataSet dsRet = new DataSet();
+            try
+            {
+                SqlDataAdapter adapter1 = new SqlDataAdapter(sSQL1, conn);
+                SqlDataAdapter adapter2 = new SqlDataAdapter(sSQL2, conn);
+                SqlDataAdapter adapter3 = new SqlDataAdapter(sSQL3, conn); 
+                SqlDataAdapter adapter4 = new SqlDataAdapter(sSQL4, conn);
+                adapter1.Fill(dsRet,"Table1");
+                adapter2.Fill(dsRet,"Table2");
+                adapter3.Fill(dsRet,"Table3");
+                adapter4.Fill(dsRet,"Table4");
+                conn.Close();
+                return dsRet;
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new ComparerException("Ошибка InvalidOperationException при заполнении DataSet: Тип исключения: " + ex.GetType() + " : " + ex.Message, ex);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new ComparerException("Ошибка ArgumentException при заполнении DataSet: Тип исключения: " + ex.GetType() + " : " + ex.Message, ex);
+            }
+
+
+        }
         public static List<string> GetDbsFromServer(string connString)
         {
 

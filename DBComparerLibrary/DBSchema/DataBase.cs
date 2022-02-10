@@ -9,12 +9,15 @@ namespace DBComparerLibrary.DBSchema
         public string dbServer { get; }// не участвует в сравнении
         public string dbName { get; }// не участвует в сравнении
         public Dictionary<string, Schema> schemas { get; }
-
+        public Dictionary<string, Table> tables { get; }
+        public Dictionary<string, View> views { get; }
         public DataBase(string dbServer, string dbName)
         {
-            this.dbServer = dbServer;
-            this.dbName = dbName;
-            this.schemas = new Dictionary<string,Schema>();
+            this.dbServer = dbServer.Trim();
+            this.dbName = dbName.Trim();
+            schemas = new Dictionary<string, Schema>();
+            tables = new Dictionary<string, Table>();
+            views = new Dictionary<string, View>();
         }
 
         public bool Equals(DataBase other)
@@ -23,9 +26,11 @@ namespace DBComparerLibrary.DBSchema
                 return false;
 
 
-            return CollectionComparer.DictEquals(this.schemas, other.schemas);
-
-
+            return Comparer.DictEquals(this.schemas, other.schemas)
+                &&
+                Comparer.DictEquals(this.tables, other.tables)
+                &&
+                Comparer.DictEquals(this.views, other.views);
         }
     }
 }

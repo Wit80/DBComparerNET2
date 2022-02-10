@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DBComparerLibrary
 {
-    public static class CollectionComparer
+    public static class Comparer
     {
         public static List<T> GetDifference<T>(List<T> list1, List<T> list2) 
         {
@@ -69,6 +69,12 @@ namespace DBComparerLibrary
             }
 
             return true;
+        }
+        public static bool CompareStrings(string o1, string o2) 
+        {
+            return object.ReferenceEquals(o1, o2) ||
+                    o1 != null &&
+                    o1.Equals(o2,StringComparison.OrdinalIgnoreCase);
         }
        
     }

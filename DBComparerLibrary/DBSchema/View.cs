@@ -1,33 +1,28 @@
-﻿
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace DBComparerLibrary.DBSchema
 {
     public class View : IEquatable<View>
     {
-        public View(ulong objId, string name, DateTime Create, DateTime Update)
+        public View(string viewName, string script, Dictionary<string, Column> columns)
         {
-            this.objectId = objId;
-            Name = name;
-            dtCreate = Create;
-            dtUpdate = Update;
+            ViewName = viewName.Trim();
+            Script = script.Trim();
+            this.columns = columns;
         }
 
-        UInt64 objectId { get; }
-        public string Name { get; }
-        public DateTime dtCreate { get; }
-        public DateTime dtUpdate { get; }
-
+        public string ViewName { get; }
+        public string Script { get; } // не участвует в сравнении
+        public Dictionary<string,Column> columns { get; }
         public bool Equals(View other)
         {
             if (other == null)
                 return false;
 
-            return (
-                    object.ReferenceEquals(this.Name, other.Name) ||
-                    this.Name != null &&
-                    this.Name.Equals(other.Name)
-                );
+            return Comparer.DictEquals(this.columns, other.columns) &&
+                Comparer.CompareStrings(this.ViewName, other.ViewName);
         }
     }
 }

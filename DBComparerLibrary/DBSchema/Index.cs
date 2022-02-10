@@ -1,23 +1,27 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace DBComparerLibrary.DBSchema
 {
-    public class Index: IEquatable<Index>
+    public class Index : IEquatable<Index>
     {
 
-        public string indexName { get; }
-        public DateTime dtCreate { get; }
-        public DateTime dtUpdate { get; }
+        public string IndexName { get; }
+        public IndexTypeEnum IndexType { get; }
+        public bool IsUniq { get; }
+        public bool IsPrimary { get; }
+        public bool IsDesc { get; }
         public List<string> columns;
 
-        public Index(string indexName, DateTime dtCreate, DateTime dtUpdate, string column)
+        public Index(string indexName, int indexType, bool isUniq, bool isPrimary, bool isDesc, List<string> columns)
         {
-            this.indexName = indexName;
-            this.dtCreate = dtCreate;
-            this.dtUpdate = dtUpdate;
-            columns = new List<string> { column };
+            IndexName = indexName.Trim();
+            IndexType = (IndexTypeEnum)indexType;
+            IsUniq = isUniq;
+            IsPrimary = isPrimary;
+            IsDesc = isDesc;
+            this.columns = columns;
         }
 
         public bool Equals(Index other)
@@ -25,12 +29,12 @@ namespace DBComparerLibrary.DBSchema
             if (other == null)
                 return false;
 
-            return CollectionComparer.EnumEquals(this.columns, other.columns) &&
-                (
-                    object.ReferenceEquals(this.indexName, other.indexName) ||
-                    this.indexName != null &&
-                    this.indexName.Equals(other.indexName)
-                );
+            return this.IndexType.Equals(other.IndexType) &&
+                this.IsUniq.Equals(other.IsUniq) &&
+                this.IsPrimary.Equals(other.IsPrimary) &&
+                this.IsDesc.Equals(other.IsDesc) &&
+                Comparer.EnumEquals(this.columns, other.columns) &&
+                Comparer.CompareStrings(this.IndexName, other.IndexName);
         }
     }
 }

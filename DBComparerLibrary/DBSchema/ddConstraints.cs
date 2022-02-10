@@ -2,9 +2,9 @@
 
 namespace DBComparerLibrary.DBSchema
 {
-    public class Constraints:IEquatable<Constraints>
+    public class ddConstraints:IEquatable<ddConstraints>
     {
-        public Constraints(string name, DateTime dtCreate, DateTime dtUpdate, ConstraintsTypeEnum type)
+        public ddConstraints(string name, DateTime dtCreate, DateTime dtUpdate, ddConstraintsTypeEnum type)
         {
             Name = name;
             this.dtCreate = dtCreate;
@@ -15,9 +15,9 @@ namespace DBComparerLibrary.DBSchema
         public string Name { get; }
         public DateTime dtCreate { get; }
         public DateTime dtUpdate { get; }
-        public ConstraintsTypeEnum Type { get; }
+        public ddConstraintsTypeEnum Type { get; }
 
-        public bool Equals(Constraints other)
+        public bool Equals(ddConstraints other)
         {
             if (other == null)
                 return false;

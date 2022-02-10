@@ -34,7 +34,7 @@ namespace DBComparer
                 }
             }
         }
-        public static string PrepareText(DataBase db, SortedDictionary<int, string> path)
+        public static string PrepareText(ddDataBase db, SortedDictionary<int, string> path)
         {
             bool IsTable = true;
             string shemaName = "";
@@ -146,7 +146,7 @@ namespace DBComparer
 
                                         if (db.schemas[shemaName].tables[sTblViewName].columns.ContainsKey(sTblItemName))
                                         {
-                                            Column column = db.schemas[shemaName].tables[sTblViewName].columns[sTblItemName];
+                                            ddColumn column = db.schemas[shemaName].tables[sTblViewName].columns[sTblItemName];
                                             string nullable = column.isNullable ? "NULL" : "NOT NULL";
                                             sb.Append(Environment.NewLine);
                                             sb.Append($"{new string(' ', 5)}Тип:[{column.TypeName}]" +
@@ -167,7 +167,7 @@ namespace DBComparer
 
                                         if (db.schemas[shemaName].tables[sTblViewName].indexes.ContainsKey(sTblItemName))
                                         {
-                                            Index index = db.schemas[shemaName].tables[sTblViewName].indexes[sTblItemName];
+                                            ddIndex index = db.schemas[shemaName].tables[sTblViewName].indexes[sTblItemName];
                                             sb.Append(Environment.NewLine);
                                             sb.Append($"{new string(' ', 5)}{index.columns.Count} столбцов" +
                                                 $", Создан:{index.dtCreate.ToString("dd-MM-yyyy HH:MM:ss")}");
@@ -189,7 +189,7 @@ namespace DBComparer
 
                                         if (db.schemas[shemaName].tables[sTblViewName].constraints.ContainsKey(sTblItemName))
                                         {
-                                            Constraints constrain = db.schemas[shemaName].tables[sTblViewName].constraints[sTblItemName];
+                                            ddConstraints constrain = db.schemas[shemaName].tables[sTblViewName].constraints[sTblItemName];
                                             sb.Append(Environment.NewLine);
                                             sb.Append($"{new string(' ', 5)}Type:{constrain.Type}" +
                                                 $", Создан:{constrain.dtCreate.ToString("dd-MM-yyyy HH:MM:ss")}");
@@ -231,7 +231,7 @@ namespace DBComparer
             }
             return sb.ToString();
         }
-        public static string PrepareSQL(DataBase db, SortedDictionary<int, string> path)
+        public static string PrepareSQL(ddDataBase db, SortedDictionary<int, string> path)
         {
             bool IsTable = true;
             string shemaName = "";
@@ -274,14 +274,14 @@ namespace DBComparer
 
                                 sb.Append($"CREATE TABLE [{shemaName}].[{sTblViewName}] (");
                                 sb.Append(Environment.NewLine);
-                                foreach (Column col in db.schemas[shemaName].tables[sTblViewName].columns.Values)
+                                foreach (ddColumn col in db.schemas[shemaName].tables[sTblViewName].columns.Values)
                                 {
                                     string isNull = col.isNullable ? "NULL" : "NOT NULL";
                                     sb.Append($"{new string(' ', 5)}[{col.Name}]");
                                     sb.Append($"{new string(' ', 10)}[{col.TypeName}]{new string(' ', 5)} {isNull},");
                                     sb.Append(Environment.NewLine);
                                 }
-                                foreach (Constraints constr in db.schemas[shemaName].tables[sTblViewName].constraints.Values)
+                                foreach (ddConstraints constr in db.schemas[shemaName].tables[sTblViewName].constraints.Values)
                                 {
                                     sb.Append($"CONSTRAINT [{constr.Name}] {constr.Type},");
                                     sb.Append(Environment.NewLine);
@@ -294,7 +294,7 @@ namespace DBComparer
                                 {
                                     foreach (string indexKey in db.schemas[shemaName].tables[sTblViewName].indexes.Keys)
                                     {
-                                        Index index = db.schemas[shemaName].tables[sTblViewName].indexes[indexKey];
+                                        ddIndex index = db.schemas[shemaName].tables[sTblViewName].indexes[indexKey];
                                         sb.Append($"CREATE INDEX [{index.indexName}] ON [{shemaName}].[{sTblViewName}] (");
                                         sb.Append(Environment.NewLine);
                                         foreach (string column in db.schemas[shemaName].tables[sTblViewName].indexes[indexKey].columns)
@@ -332,7 +332,7 @@ namespace DBComparer
             }
             return sb.ToString();
         }
-        public static List<List<string>> PrepareSQLList(DataBase db, SortedDictionary<int, string> path)
+        public static List<List<string>> PrepareSQLList(ddDataBase db, SortedDictionary<int, string> path)
         {
             bool IsTable = true;
             string shemaName = "";
@@ -378,13 +378,13 @@ namespace DBComparer
 
                                 list[0].Add($"CREATE TABLE [{shemaName}].[{sTblViewName}] (");
                                 list[0].Add(Environment.NewLine);
-                                foreach (Column col in db.schemas[shemaName].tables[sTblViewName].columns.Values)
+                                foreach (ddColumn col in db.schemas[shemaName].tables[sTblViewName].columns.Values)
                                 {
                                     string isNull = col.isNullable ? "NULL" : "NOT NULL";
                                     list[0].Add($"{new string(' ', 5)}[{col.Name}]{new string(' ', 10)}[{col.TypeName}]{new string(' ', 5)} {isNull},");
                                     list[0].Add(Environment.NewLine);
                                 }
-                                foreach (Constraints constr in db.schemas[shemaName].tables[sTblViewName].constraints.Values)
+                                foreach (ddConstraints constr in db.schemas[shemaName].tables[sTblViewName].constraints.Values)
                                 {
                                     list[1].Add($"CONSTRAINT [{constr.Name}] {constr.Type},");
                                     list[1].Add(Environment.NewLine);
@@ -397,7 +397,7 @@ namespace DBComparer
                                 {
                                     foreach (string indexKey in db.schemas[shemaName].tables[sTblViewName].indexes.Keys)
                                     {
-                                        Index index = db.schemas[shemaName].tables[sTblViewName].indexes[indexKey];
+                                        ddIndex index = db.schemas[shemaName].tables[sTblViewName].indexes[indexKey];
                                         list[2].Add($"CREATE INDEX [{index.indexName}] ON [{shemaName}].[{sTblViewName}] (");
                                         list[2].Add(Environment.NewLine);
                                         foreach (string column in db.schemas[shemaName].tables[sTblViewName].indexes[indexKey].columns)

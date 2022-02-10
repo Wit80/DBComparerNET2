@@ -16,14 +16,47 @@ namespace DBComparer
 {
     public partial class Form1 : Form
     {
-        private DataBase db1 = null;
-        private DataBase db2 = null;
+        private ddDataBase db1 = null;
+        private ddDataBase db2 = null;
         private static Color colorEqual = Color.Green;  // структуры есть в обоих БД и их внутренняя структура идентична
         private static Color colorEpson = Color.Red;    // структура отсутствует в одной из БД 
         private static Color colorDiferentIntern = Color.Coral; // структура есть в обоих БД, но их внутренняя структура отличается
         public Form1()
         {
             InitializeComponent();
+            
+            Stopwatch stopWatch = new Stopwatch();
+            stopWatch.Start();
+
+            //DataProcessor proc = new DataProcessor("Server = WIT_HONOR; integrated security = true; database = AdventureWorks2019");
+            string connSring2 = "Server = WIN-B080H6IP1JD;integrated security=true; database = AW";
+            DataProcessor proc = new DataProcessor(connSring2);
+
+            try
+            {
+                proc.RunProcess();
+            }
+            catch (Exception ex) 
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            //DBsysWorker wrk = new DBsysWorker("Server = WIT_HONOR; integrated security = true; database = AdventureWorks2019");
+            stopWatch.Stop();
+            TimeSpan ts = stopWatch.Elapsed;
+
+            // Format and display the TimeSpan value.
+            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                ts.Hours, ts.Minutes, ts.Seconds,
+                ts.Milliseconds / 10);
+
+            MessageBox.Show(elapsedTime);
+
+
+
+            return;
+
+
             tsDBInfo.Visible = false;
             splitContainer3.SplitterDistance = splitContainer3.Size.Width / 2;
             splitContainer4.SplitterDistance = splitContainer4.Size.Width / 2;
@@ -78,7 +111,7 @@ namespace DBComparer
                 MessageBox.Show("Ошибка при получении информации о БД1: {0}", e.Error.Message);
             }
 
-            db1 = (DataBase)e.Result;
+            db1 = (ddDataBase)e.Result;
             if (db1 is null)
             {// информации нет
                 MessageBox.Show("Ошибка получения Информации о структуре БД1");
@@ -103,7 +136,7 @@ namespace DBComparer
                 MessageBox.Show("Ошибка при получении информации о БД2: {0}", e.Error.Message);
             }
 
-            db2 = (DataBase)e.Result;
+            db2 = (ddDataBase)e.Result;
             if (db2 is null)
             {// информации нет
                 MessageBox.Show("Ошибка получения Информации о структуре БД2");
@@ -115,14 +148,14 @@ namespace DBComparer
 
             }
         }
-        private DataBase GetDataBaseInfo(DoWorkEventArgs e)
+        private ddDataBase GetDataBaseInfo(DoWorkEventArgs e)
         {
             DataProcessor proc = new DataProcessor(e.Argument as string);
             return proc.RunProcess();
         }
         private void ShowDbsInfo()
         {
-            try
+            /*try
             {
                 ShowNotes();
                 richTextBox1.Text = "";
@@ -146,7 +179,7 @@ namespace DBComparer
                 AddNoda(Noda00SchemasRoot, $"Schemas({ db1.schemas.Count}/{db2.schemas.Count})", 1, colorDiferentIntern);
                 var Noda01SchemaNames = Noda00SchemasRoot[0].Nodes;
                 int Noda01Num = 0;
-                if (CollectionComparer.DictEquals(db1.schemas, db2.schemas))
+                if (Comparer.DictEquals(db1.schemas, db2.schemas))
                 {//СХЕМЫ ОДИНАКОВЫЕ
                     Noda00SchemasRoot[0].ForeColor = colorEqual;
                     foreach (var schemaKey in db1.schemas.Keys)
@@ -158,7 +191,7 @@ namespace DBComparer
                 }
 
                 // получим список ключей отличающихся схем
-                var diffKeys = CollectionComparer.GetDifference(new List<string>(db1.schemas.Keys), new List<string>(db2.schemas.Keys));
+                var diffKeys = Comparer.GetDifference(new List<string>(db1.schemas.Keys), new List<string>(db2.schemas.Keys));
 
                 // ОТЛИЧАЮЩИЕСЯ СХЕМЫ
                 foreach (var schema in diffKeys)
@@ -185,13 +218,13 @@ namespace DBComparer
                     else
                     {//схемы отличаются по содержанию
 
-                        Schema schema1 = db1.schemas[schemaKey];
-                        Schema schema2 = db2.schemas[schemaKey];
+                        ddSchema schema1 = db1.schemas[schemaKey];
+                        ddSchema schema2 = db2.schemas[schemaKey];
                         AddNoda(Noda01SchemaNames
                                     , $"[{schema1.Name}]({schema1.tables.Count} tables {schema1.views.Count} views " +
                                     $"/ {schema2.tables.Count} tables {schema2.views.Count} views)"
                                     , 1, colorDiferentIntern);
-                        if (CollectionComparer.DictEquals(schema1.tables, schema2.tables))
+                        if (Comparer.DictEquals(schema1.tables, schema2.tables))
                         {//ТАБЛИЦЫ одинаковые
                             if (schema1.tables.Count > 0)
                             {
@@ -217,14 +250,14 @@ namespace DBComparer
                                 , $"Tables {schema1.tables.Count}/{schema2.tables.Count}"
                                 , 2, colorDiferentIntern);
                             int iNodaTablesNameLevel = 0;
-                            var diffKeysTables = CollectionComparer.GetDifference(new List<string>(schema1.tables.Keys), new List<string>(schema2.tables.Keys));
+                            var diffKeysTables = Comparer.GetDifference(new List<string>(schema1.tables.Keys), new List<string>(schema2.tables.Keys));
                             if (0 != diffKeysTables.Count)
                             {// некоторые называются по разному
                                 foreach (var tableKey in diffKeysTables)
                                 {
                                     var Noda03TableNames = Noda02TablesRoot[Noda02TablesRoot.Count - 1].Nodes;
                                     int iNodaTableCollectLevel = 0;
-                                    Table table;
+                                    ddTable table;
                                     if (schema1.tables.ContainsKey(tableKey))
                                     {
                                         table = schema1.tables[tableKey];
@@ -258,7 +291,7 @@ namespace DBComparer
                                         , 2, colorDiferentIntern);
 
                                     // СТОЛБЦЫ
-                                    if (CollectionComparer.DictEquals(table1.columns, table2.columns))
+                                    if (Comparer.DictEquals(table1.columns, table2.columns))
                                     {//одинаковые
                                         AddColumnsNodes(table1, Noda03TableNames, iNodaTablesNameLevel, colorEqual, ref iNodaTableCollectLevel);
                                     }
@@ -266,7 +299,7 @@ namespace DBComparer
                                     {//отличаются
                                         var Noda04ColumnRoot = Noda03TableNames[iNodaTablesNameLevel].Nodes;
                                         AddNoda(Noda04ColumnRoot, $"Columns {schema1.tables[tableKey].columns.Count}/{schema2.tables[tableKey].columns.Count}", 3, colorDiferentIntern);
-                                        var diffKeysColumns = CollectionComparer.GetDifference(new List<string>(schema1.tables[tableKey].columns.Keys), new List<string>(schema2.tables[tableKey].columns.Keys));
+                                        var diffKeysColumns = Comparer.GetDifference(new List<string>(schema1.tables[tableKey].columns.Keys), new List<string>(schema2.tables[tableKey].columns.Keys));
                                         //сначала пройдем по отличающимся
                                         int iColumnNum = 0;
                                         foreach (var columnKey in diffKeysColumns)
@@ -293,7 +326,7 @@ namespace DBComparer
                                         iNodaTableCollectLevel++;
                                     }
                                     // ИНДЕКСЫ
-                                    if (CollectionComparer.DictEquals(table1.indexes, table2.indexes))
+                                    if (Comparer.DictEquals(table1.indexes, table2.indexes))
                                     {//одинаковые
                                         AddIndexesNodes(table1, Noda03TableNames, iNodaTablesNameLevel, colorEqual, ref iNodaTableCollectLevel);
                                     }
@@ -301,7 +334,7 @@ namespace DBComparer
                                     {//отличаются
                                         var Noda04IndexRoot = Noda03TableNames[iNodaTablesNameLevel].Nodes;
                                         AddNoda(Noda04IndexRoot, $"Indexes {schema1.tables[tableKey].indexes.Count}/{schema2.tables[tableKey].indexes.Count}", 4, colorDiferentIntern);
-                                        var diffKeysIndexes = CollectionComparer.GetDifference(new List<string>(schema1.tables[tableKey].indexes.Keys), new List<string>(schema2.tables[tableKey].indexes.Keys));
+                                        var diffKeysIndexes = Comparer.GetDifference(new List<string>(schema1.tables[tableKey].indexes.Keys), new List<string>(schema2.tables[tableKey].indexes.Keys));
                                         //сначала пройдем по отличающимся
                                         int iIndexNum = 0;
                                         foreach (var indexKey in diffKeysIndexes)
@@ -338,7 +371,7 @@ namespace DBComparer
                                             AddNoda(Noda05IndexNames, $"[{schema1.tables[tableKey].indexes[indexKey].indexName}] ({schema1.tables[tableKey].indexes[indexKey].columns.Count} columns" +
                                                 $"/ {schema2.tables[tableKey].indexes[indexKey].columns.Count} columns)", 4, colorDiferentIntern);
                                             var Noda06IndexColumns = Noda05IndexNames[iIndexNum].Nodes;
-                                            var diffKeysIndexesColumns = CollectionComparer.GetDifference(new List<string>(schema1.tables[tableKey].indexes[indexKey].columns), new List<string>(schema2.tables[tableKey].indexes[indexKey].columns));
+                                            var diffKeysIndexesColumns = Comparer.GetDifference(new List<string>(schema1.tables[tableKey].indexes[indexKey].columns), new List<string>(schema2.tables[tableKey].indexes[indexKey].columns));
                                             foreach (var indexColumn in diffKeysIndexesColumns)
                                             {
                                                 AddNoda(Noda06IndexColumns, $"[{indexColumn}]", 4, colorEpson);
@@ -355,7 +388,7 @@ namespace DBComparer
                                         iNodaTableCollectLevel++;
                                     }
                                     // ОГРАНИЧЕНИЯ
-                                    if (CollectionComparer.DictEquals(table1.constraints, table2.constraints))
+                                    if (Comparer.DictEquals(table1.constraints, table2.constraints))
                                     {//одинаковые
                                         AddConstraintsNodes(table1, Noda03TableNames, iNodaTablesNameLevel, colorEqual, ref iNodaTableCollectLevel);
                                     }
@@ -364,7 +397,7 @@ namespace DBComparer
 
                                         var Noda04ConstRoot = Noda03TableNames[iNodaTablesNameLevel].Nodes;
                                         AddNoda(Noda04ConstRoot, $"Constraints {schema1.tables[tableKey].constraints.Count}/{schema2.tables[tableKey].constraints.Count}", 6, colorDiferentIntern);
-                                        var diffKeysConstrName = CollectionComparer.GetDifference(new List<string>(schema1.tables[tableKey].constraints.Keys), new List<string>(schema2.tables[tableKey].constraints.Keys));
+                                        var diffKeysConstrName = Comparer.GetDifference(new List<string>(schema1.tables[tableKey].constraints.Keys), new List<string>(schema2.tables[tableKey].constraints.Keys));
                                         //сначала пройдем по отличающимся
                                         foreach (var constrKey in diffKeysConstrName)
                                         {
@@ -394,7 +427,7 @@ namespace DBComparer
                                 iNodaTablesNameLevel++;
                             }
                         }
-                        if (CollectionComparer.DictEquals(schema1.views, schema2.views))
+                        if (Comparer.DictEquals(schema1.views, schema2.views))
                         {//ВЬЮХИ одинаковые
                             if (schema1.views.Count > 0)
                             {
@@ -417,7 +450,7 @@ namespace DBComparer
                             AddNoda(Noda02
                                 , $"Views {schema1.views.Count}/{schema2.views.Count}"
                                 , 5, colorDiferentIntern);
-                            var diffKeysViews = CollectionComparer.GetDifference(new List<string>(schema1.views.Keys), new List<string>(schema2.views.Keys));
+                            var diffKeysViews = Comparer.GetDifference(new List<string>(schema1.views.Keys), new List<string>(schema2.views.Keys));
                             var Noda03 = Noda02[Noda02.Count - 1].Nodes;
                             //сначала пройдем по отличающимся
                             foreach (var viewKey in diffKeysViews)
@@ -446,19 +479,19 @@ namespace DBComparer
             catch (Exception ex) 
             {
                 MessageBox.Show("Ошибка:" + ex.Message);
-            }
+            }*/
 
 
         }
-        private void SetUniqSchemas(Schema schema, TreeNodeCollection Noda01SchemaNames, int Noda01Num, bool IsLeftDB)
+        private void SetUniqSchemas(ddSchema schema, TreeNodeCollection Noda01SchemaNames, int Noda01Num, bool IsLeftDB)
         {
             SetSchemas(schema, null, Noda01SchemaNames, Noda01Num, colorEpson, false, IsLeftDB);
         }
-        private void SetEqualSchema(Schema schema1, Schema schema2, TreeNodeCollection Noda01SchemaNames, int Noda01Num)
+        private void SetEqualSchema(ddSchema schema1, ddSchema schema2, TreeNodeCollection Noda01SchemaNames, int Noda01Num)
         {
             SetSchemas(schema1, schema2, Noda01SchemaNames, Noda01Num, colorEqual, true);
         }
-        private void SetSchemas(Schema schema1, Schema schema2, TreeNodeCollection Noda01SchemaNames, int Noda01Num, Color colorNoda, bool isEqual, bool IsLeftDB = false)
+        private void SetSchemas(ddSchema schema1, ddSchema schema2, TreeNodeCollection Noda01SchemaNames, int Noda01Num, Color colorNoda, bool isEqual, bool IsLeftDB = false)
         {
             string sNodeText;
             if (isEqual)
@@ -532,7 +565,7 @@ namespace DBComparer
             }
         }
 
-        private void AddTableNoda(TreeNodeCollection Noda03TableNames, Table table, string rootNodaText, ref int iNodaTablesNameLevel, ref int iNodaTableCollectLevel, int imageNum, Color colorNoda)
+        private void AddTableNoda(TreeNodeCollection Noda03TableNames, ddTable table, string rootNodaText, ref int iNodaTablesNameLevel, ref int iNodaTableCollectLevel, int imageNum, Color colorNoda)
         {
             AddNoda(Noda03TableNames, rootNodaText, imageNum, colorNoda);
 
@@ -545,7 +578,7 @@ namespace DBComparer
         }
         
 
-        private void AddColumnsNodes(Table table, TreeNodeCollection Noda03TableNames, int iNodaTablesNameLevel, Color colorNoda, ref int iNodaTableCollectLevel)
+        private void AddColumnsNodes(ddTable table, TreeNodeCollection Noda03TableNames, int iNodaTablesNameLevel, Color colorNoda, ref int iNodaTableCollectLevel)
         {
             if (table.columns.Count > 0)
             {
@@ -561,7 +594,7 @@ namespace DBComparer
 
             }
         }
-        private void AddIndexesNodes(Table table, TreeNodeCollection Noda03TableNames, int iNodaTablesNameLevel, Color colorNoda, ref int iNodaTableCollectLevel)
+        private void AddIndexesNodes(ddTable table, TreeNodeCollection Noda03TableNames, int iNodaTablesNameLevel, Color colorNoda, ref int iNodaTableCollectLevel)
         {
             if (table.indexes.Count > 0)
             {
@@ -582,7 +615,7 @@ namespace DBComparer
                 iNodaTableCollectLevel++;
             }
         }
-        private void AddConstraintsNodes(Table table, TreeNodeCollection Noda03TableNames, int iNodaTablesNameLevel, Color colorNoda, ref int iNodaTableCollectLevel)
+        private void AddConstraintsNodes(ddTable table, TreeNodeCollection Noda03TableNames, int iNodaTablesNameLevel, Color colorNoda, ref int iNodaTableCollectLevel)
         {
             if (table.constraints.Count > 0)
             {
@@ -626,7 +659,7 @@ namespace DBComparer
 
         private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            richTextBox3.Text = "";
+            /*richTextBox3.Text = "";
             richTextBox4.Text = "";
             
             SortedDictionary<int, string> fullNodePath = GetFullPath(e);
@@ -656,17 +689,17 @@ namespace DBComparer
                     
                     
                    
-                    if (!CollectionComparer.EnumEquals(list1[0], list2[0]))
+                    if (!Comparer.EnumEquals(list1[0], list2[0]))
                     {
                         SetOnTextBoxColor(list1[0], list2[0], 0, 0, iPos1_1, iPos2_1);
                     }
                     Helper.AlignLists(list1[1], list2[1]);
-                    if (!CollectionComparer.EnumEquals(list1[1], list2[1]))
+                    if (!Comparer.EnumEquals(list1[1], list2[1]))
                     {
                         SetOnTextBoxColor(list1[1], list2[1], iPos1_1, iPos1_1, iPos1_2, iPos2_2);
 
                     }
-                    if (!CollectionComparer.EnumEquals(list1[2], list2[2]))
+                    if (!Comparer.EnumEquals(list1[2], list2[2]))
                     {
                         SetOnTextBoxColor(list1[2], list2[2], iPos1_2, iPos2_2, richTextBox3.Text.Length, richTextBox4.Text.Length);
                     }
@@ -679,13 +712,13 @@ namespace DBComparer
             catch (Exception ex) 
             {
                 MessageBox.Show(ex.Message);
-            }
+            }*/
 
         }
         
-        void SetOnTextBoxColor(List<string> list1, List<string> list2, int StartInd1, int StartInd2, int FinInd1, int FinInd2) 
+        /*void SetOnTextBoxColor(List<string> list1, List<string> list2, int StartInd1, int StartInd2, int FinInd1, int FinInd2) 
         {
-            List<string> diff = CollectionComparer.GetDifference(list1, list2);
+            List<string> diff = Comparer.GetDifference(list1, list2);
 
             foreach (var str in diff)
             {
@@ -719,7 +752,7 @@ namespace DBComparer
 
 
             }
-        }
+        }*/
         private SortedDictionary<int, string> GetFullPath(TreeViewEventArgs e) 
         {
             SortedDictionary<int, string> route = new SortedDictionary<int, string>();

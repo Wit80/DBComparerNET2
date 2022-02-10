@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DBComparerLibrary.DBSchema
 {
-    public enum ConstraintsTypeEnum
+    public enum ddConstraintsTypeEnum
     {
         PRIMARY_KEY,    /*PK*/
         UNIQUE,         /*UQ*/

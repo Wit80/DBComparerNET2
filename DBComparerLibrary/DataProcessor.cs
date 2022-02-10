@@ -16,14 +16,17 @@ namespace DBComparerLibrary
         {
             wrk = new DBsysWorker(connString);
         }
-        public DataBase RunProcess() 
+        public ddDataBase RunProcess() 
         {
+            wrk.GetDataFromDB();
+
+            return null;
             wrk.GetDataFromDB();
             if (0 == wrk.dsObjects.Tables[0].Rows.Count)
             {//прочитано 0 объектов
                 throw new ComparerException("Из БД прочитано 0 объектов ");
             }
-            DataBase db = new DataBase(wrk.dsObjects.Tables[0].Rows[0][(int)SQLObjectFieldsEnum.serverName].ToString(), 
+            ddDataBase db = new ddDataBase(wrk.dsObjects.Tables[0].Rows[0][(int)SQLObjectFieldsEnum.serverName].ToString(), 
                 wrk.dsObjects.Tables[0].Rows[0][(int)SQLObjectFieldsEnum.dbName].ToString());
             foreach (DataRow dr in wrk.dsObjects.Tables[0].Rows)
             {
@@ -45,17 +48,17 @@ namespace DBComparerLibrary
        
 
 
-        private void RowProcess(DataBase db, DataRow dr) 
+        private void RowProcess(ddDataBase db, DataRow dr) 
         {
             // проверка есть ли эта схема
             if (!db.schemas.ContainsKey(dr[(int)SQLObjectFieldsEnum.schemaName].ToString()))
             {//схемы нет, добавляем её
                 db.schemas.Add(dr[(int)SQLObjectFieldsEnum.schemaName].ToString(),
-                    new Schema(dr[(int)SQLObjectFieldsEnum.schemaName].ToString(), Convert.ToInt32(dr[(int)SQLObjectFieldsEnum.schemaId])));
+                    new ddSchema(dr[(int)SQLObjectFieldsEnum.schemaName].ToString(), Convert.ToInt32(dr[(int)SQLObjectFieldsEnum.schemaId])));
             }
             RowSpliter(db.schemas[dr[(int)SQLObjectFieldsEnum.schemaName].ToString()], dr);
         }
-        private void RowSpliter(Schema sch, DataRow dr) 
+        private void RowSpliter(ddSchema sch, DataRow dr) 
         {
             string objType = dr[(int)SQLObjectFieldsEnum.objectType].ToString().Trim();
             switch (objType) 
@@ -66,7 +69,7 @@ namespace DBComparerLibrary
                         {//этой таблицы нет
                             UInt64 objId = Convert.ToUInt64(dr[(int)SQLObjectFieldsEnum.objectId]);
                             sch.tables.Add(dr[(int)SQLObjectFieldsEnum.objectName].ToString(),
-                                new Table(objId, dr[(int)SQLObjectFieldsEnum.objectName].ToString(),
+                                new ddTable(objId, dr[(int)SQLObjectFieldsEnum.objectName].ToString(),
                                 wrk.GetRowCount(objId), Convert.ToDateTime(dr[(int)SQLObjectFieldsEnum.dtCreate]),
                                 Convert.ToDateTime(dr[(int)SQLObjectFieldsEnum.dtModif]), wrk.GetColums(objId), wrk.GetIndexes(objId)));
                         }
@@ -78,7 +81,7 @@ namespace DBComparerLibrary
                         {//этого представления нет
                             UInt64 objId = Convert.ToUInt64(dr[(int)SQLObjectFieldsEnum.objectId]);
                             sch.views.Add(dr[(int)SQLObjectFieldsEnum.objectName].ToString(),
-                                new View(objId, dr[(int)SQLObjectFieldsEnum.objectName].ToString(),
+                                new ddView(objId, dr[(int)SQLObjectFieldsEnum.objectName].ToString(),
                                     Convert.ToDateTime(dr[(int)SQLObjectFieldsEnum.dtCreate]),
                                     Convert.ToDateTime(dr[(int)SQLObjectFieldsEnum.dtModif])));
                         }
@@ -86,22 +89,22 @@ namespace DBComparerLibrary
                     break;
                 case "PK"://ограничение PRIMARY KEY
                     {
-                        SetConstraint(sch.tables, dr, ConstraintsTypeEnum.PRIMARY_KEY);
+                        SetConstraint(sch.tables, dr, ddConstraintsTypeEnum.PRIMARY_KEY);
                     }
                     break;
                 case "UQ"://ограничение UNIQUE
                     {
-                        SetConstraint(sch.tables, dr, ConstraintsTypeEnum.UNIQUE);
+                        SetConstraint(sch.tables, dr, ddConstraintsTypeEnum.UNIQUE);
                     }
                     break;
                 case "F"://ограничение FOREIGN KEY
                     {
-                        SetConstraint(sch.tables, dr, ConstraintsTypeEnum.FOREIGN_KEY);
+                        SetConstraint(sch.tables, dr, ddConstraintsTypeEnum.FOREIGN_KEY);
                     }
                     break;
                 case "C"://ограничение CHECK
                     {
-                        SetConstraint(sch.tables, dr, ConstraintsTypeEnum.CHECK);
+                        SetConstraint(sch.tables, dr, ddConstraintsTypeEnum.CHECK);
                     }
                     break;
                 default: 
@@ -110,19 +113,19 @@ namespace DBComparerLibrary
                     }
             }
         }
-        private void SetConstraint(Dictionary<string, Table> tbls, DataRow dr, ConstraintsTypeEnum constrType) 
+        private void SetConstraint(Dictionary<string, ddTable> tbls, DataRow dr, ddConstraintsTypeEnum constrType) 
         {
             string parentObjName = dr[(int)SQLObjectFieldsEnum.tblName].ToString();
             if (!tbls.ContainsKey(parentObjName))
             {//этой таблицы нет
                 UInt64 objId = Convert.ToUInt64(dr[(int)SQLObjectFieldsEnum.parentObjId]);
                 tbls.Add(parentObjName,
-                    new Table(objId, parentObjName,
+                    new ddTable(objId, parentObjName,
                     wrk.GetRowCount(objId), Convert.ToDateTime(dr[(int)SQLObjectFieldsEnum.tblCreate]),
                     Convert.ToDateTime(dr[(int)SQLObjectFieldsEnum.tblModify]), wrk.GetColums(objId), wrk.GetIndexes(objId)));
             }
             tbls[parentObjName]
-                    .constraints.Add(dr[(int)SQLObjectFieldsEnum.objectName].ToString(),new Constraints(dr[(int)SQLObjectFieldsEnum.objectName].ToString(),
+                    .constraints.Add(dr[(int)SQLObjectFieldsEnum.objectName].ToString(),new ddConstraints(dr[(int)SQLObjectFieldsEnum.objectName].ToString(),
                             Convert.ToDateTime(dr[(int)SQLObjectFieldsEnum.dtCreate]),
                             Convert.ToDateTime(dr[(int)SQLObjectFieldsEnum.dtModif]), constrType));
         }        

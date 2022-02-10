@@ -3,21 +3,27 @@ using DBComparerLibrary.DBSQLExecutor;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Threading;
 
 namespace DBComparerLibrary
 {
     public class DBsysWorker
     {
+        public Dictionary<string, View> dictViews;
+        public Dictionary<string, Schema> dictSchemas;
+        public Dictionary<string, Table> dictTables;
+
+
         public DataSet dsObjects;
         public bool ObjectsOKflag = false;
         public string ObjectsExceptionText;
         //public DataSet dsColumns;
-        public Dictionary<UInt64, Dictionary<string, Column>> dictColumns;
+        public Dictionary<UInt64, Dictionary<string, ddColumn>> dictColumns;
         public bool ColumnsOKflag = false;
         public string ColumnsExceptionText;
         //public DataSet dsIndexes;
-        public Dictionary<UInt64, Dictionary<string, Index>> dictIndexes;
+        public Dictionary<UInt64, Dictionary<string, ddIndex>> dddictIndexes;
         public bool IndexesOKflag = false;
         public string IndexesExceptionText;
         //public DataSet dsRowsCount;
@@ -34,6 +40,329 @@ namespace DBComparerLibrary
         {
             _connString = connString;
         }
+        public void GetDataFromDB() 
+        {
+            try
+            {
+                GetSysViews();
+                GetSysSchemas();
+                GetSysTables();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        private void GetSysViews()
+        {
+            try
+            {
+                dictViews = GetViewsDictionary(execute(SQLs.GetSQLViews_WithScript()), execute(SQLs.GetSQLViews_WithColums()));
+            }
+            catch (Exception ex)
+            {
+                ObjectsExceptionText = "Ошибка GetSysViews. Тип исключения: " + ex.GetType() + " : " + ex.Message;
+            }
+        }
+        private void GetSysSchemas()
+        {
+            try
+            {
+                dictSchemas = GetSchemasDictionary(execute(SQLs.GetSQLSchemas()));
+            }
+            catch (Exception ex)
+            {
+                ObjectsExceptionText = "Ошибка GetSysSchemas. Тип исключения: " + ex.GetType() + " : " + ex.Message;
+            }
+        }
+        private void GetSysTables() 
+        {
+            try
+            {
+                dictTables = GetTablesDictionary(execute(SQLs.GetSQLTables_WithColumns(),SQLs.GetSQLTables_WithDefaults(), SQLs.GetSQLIndexes(), SQLs.GetSQLForeignKeys()));
+
+            }
+            catch (Exception ex)
+            {
+                ObjectsExceptionText = "Ошибка GetSysTables. Тип исключения: " + ex.GetType() + " : " + ex.Message;
+            }
+        }
+        
+        
+        private Dictionary<string, View> GetViewsDictionary(DataSet dsScript, DataSet dsColums)
+        {
+            Dictionary<string, string> scripts = new Dictionary<string, string>();
+            foreach (DataRow dr in dsScript.Tables[0].Rows)
+            {
+                if (!scripts.ContainsKey(dr[0].ToString()))
+                    scripts.Add(dr[0].ToString(), dr[1].ToString());
+            }
+            Dictionary<string, View> dictRet = new Dictionary<string, View>();
+            foreach (DataRow dr in dsColums.Tables[0].Rows)
+            {
+                string SchemaView = dr[0].ToString();
+                if (dictRet.ContainsKey(SchemaView))
+                {
+                    View tmpV = dictRet[SchemaView];
+                    if (!tmpV.columns.ContainsKey(dr[1].ToString()))
+                    {
+                        tmpV.columns.Add(dr[1].ToString(), new Column(dr[1].ToString(), dr[2].ToString(), Convert.ToInt32(dr[3]),
+                                       Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7])));
+                    }
+                }
+                else
+                {
+                    dictRet.Add(SchemaView,
+                        new View(SchemaView, scripts[SchemaView],
+                           new Dictionary<string, Column>()
+                           {
+                               { dr[1].ToString(), new Column(dr[1].ToString(), dr[2].ToString(), Convert.ToInt32(dr[3]),
+                                       Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7])) }
+                           }));
+                }
+            }
+            return dictRet;
+        }
+
+        private Dictionary<string, Schema> GetSchemasDictionary(DataSet dsSchemas)
+        {
+            Dictionary<string, Schema> dictRet = new Dictionary<string, Schema>();
+            foreach (DataRow dr in dsSchemas.Tables[0].Rows)
+            {
+                if (!dictRet.ContainsKey(dr[0].ToString()))
+                {
+                    dictRet.Add(dr[0].ToString(), new Schema(sch_Name: dr[0].ToString(), sch_Owner: dr[1].ToString()));
+                }
+            }
+            return dictRet;
+        }
+        //private Dictionary<string, Table> GetTablesDictionary(DataSet dsTables,DataSet DF_constraint)
+        private Dictionary<string, Table> GetTablesDictionary(DataSet dsTablesItog)
+        {
+            /**************************************DEFAULTS*************************************************/
+            Dictionary<string, Dictionary<string,List<string>>> defaults = new Dictionary<string, Dictionary<string, List<string>>>();
+            foreach (DataRow dr in dsTablesItog.Tables[1].Rows)
+            {
+                string SchemaTable = dr[0].ToString();
+                if (defaults.ContainsKey(SchemaTable))
+                {//таблица встречалась
+                    var tbl = defaults[SchemaTable];
+                    if (!tbl.ContainsKey(dr[1].ToString()))
+                    {// столбца не было еще
+                        tbl.Add(dr[1].ToString(), new List<string>() { dr[2].ToString(), dr[3].ToString() });
+                    }
+                }
+                else 
+                {
+                    defaults.Add(SchemaTable,
+                        new Dictionary<string, List<string>>() 
+                        {
+                            { dr[1].ToString(),new List<string>(){ dr[2].ToString(),dr[3].ToString()} }
+                        }
+                        );
+                }
+            }
+            /**************************************INDEXES*************************************************/
+            Dictionary<string, Dictionary<string, Index>> dictIndexes = new Dictionary<string, Dictionary<string, Index>>();
+            foreach (DataRow dr in dsTablesItog.Tables[2].Rows)
+            {
+                string SchemaTable = dr[0].ToString();
+                if (dictIndexes.ContainsKey(SchemaTable))
+                {
+                    if (!dictIndexes[SchemaTable].ContainsKey(dr[1].ToString()))
+                    {
+                        dictIndexes[SchemaTable].Add(dr[1].ToString(),
+                            new Index(dr[1].ToString(), Convert.ToInt32(dr[3]), Convert.ToBoolean(dr[4]), Convert.ToBoolean(dr[5]), Convert.ToBoolean(dr[6]), new List<string>((dr[2].ToString()).Split(','))));
+                    }
+                }
+                else
+                {
+
+                    dictIndexes.Add(SchemaTable,
+                        new Dictionary<string, Index>()
+                        {
+                        { dr[1].ToString(),
+                        new Index(dr[1].ToString(), Convert.ToInt32(dr[3]), Convert.ToBoolean(dr[4]), Convert.ToBoolean(dr[5]), Convert.ToBoolean(dr[6]), new List<string>((dr[2].ToString()).Split(',')))
+                        }
+                        });
+                }
+            }
+            /**************************************FK*************************************************/
+            Dictionary<string, Dictionary<string, ForeignKey>> dictFK = new Dictionary<string, Dictionary<string, ForeignKey>>();
+            foreach (DataRow dr in dsTablesItog.Tables[3].Rows)
+            {
+                string SchemaTable = dr[1].ToString();
+                if (dictFK.ContainsKey(SchemaTable))
+                {
+                    var fkDict = dictFK[SchemaTable];
+                    if (fkDict.ContainsKey(dr[0].ToString()))
+                    {//этот FK есть
+                        fkDict[dr[0].ToString()].refs.Add(
+                            new ForeignKeyRefs(dr[1].ToString(), dr[2].ToString(), dr[3].ToString(), dr[4].ToString(), dr[5].ToString(), dr[6].ToString())
+                            );
+
+                    }
+                    else
+                    {
+                        fkDict.Add(dr[0].ToString(), new ForeignKey(dr[0].ToString(),
+                                new List<ForeignKeyRefs>() {
+                                    new ForeignKeyRefs(dr[1].ToString(), dr[2].ToString(), dr[3].ToString(), dr[4].ToString(),dr[5].ToString(),dr[6].ToString())
+                                }));
+                    }
+                }
+                else
+                {
+                    dictFK.Add(SchemaTable, new Dictionary<string, ForeignKey>()
+                        {
+                        { dr[0].ToString(), new ForeignKey(dr[0].ToString(),
+                                new List<ForeignKeyRefs>() {
+                                    new ForeignKeyRefs(dr[1].ToString(), dr[2].ToString(), dr[3].ToString(), dr[4].ToString(),dr[5].ToString(),dr[6].ToString())
+                                })
+
+                        }
+                    });
+                }
+            }
+            /**************************************TABLES*************************************************/
+            Dictionary<string, Table> dictRet = new Dictionary<string, Table>();
+            foreach (DataRow dr in dsTablesItog.Tables[0].Rows)
+            {
+                string SchemaTable = dr[0].ToString();
+                var defs = GetDefaultsFromDict(defaults,SchemaTable, dr[1].ToString());
+                if (dictRet.ContainsKey(dr[0].ToString()))
+                {
+                    Table tmpT = dictRet[SchemaTable];
+                    if (!tmpT.columns.ContainsKey(dr[1].ToString()))
+                    {
+                        tmpT.columns.Add(dr[1].ToString(),
+                            new Column(dr[1].ToString(), dr[2].ToString(), Convert.ToInt32(dr[3]),
+                                       Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7]), defs[0], defs[1]));
+                        
+                    }
+                }
+                else 
+                {
+                    Dictionary<string, Index> ind;
+                    if (dictIndexes.ContainsKey(SchemaTable))
+                        ind = dictIndexes[SchemaTable];
+                    else
+                        ind = new Dictionary<string, Index>();
+                    Dictionary<string, ForeignKey> fk;
+                    if (dictFK.ContainsKey(SchemaTable))
+                        fk = dictFK[SchemaTable];
+                    else
+                        fk = new Dictionary<string, ForeignKey>();
+
+                    dictRet.Add(SchemaTable,
+                        new Table(SchemaTable, new Dictionary<string, Column>()
+                        {
+                            { dr[1].ToString(),
+                            new Column(dr[1].ToString(), dr[2].ToString(), Convert.ToInt32(dr[3]),
+                                       Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7]),defs[0],defs[1])}
+                            
+                        }, ind, fk));
+                }
+            }
+            return dictRet;
+        }
+
+        private Dictionary<string ,Dictionary<string, Index>> GetIndexesDictionary(DataSet dsIndexes)
+        {
+
+            Dictionary<string, Dictionary<string, Index>> dictRet = new Dictionary<string, Dictionary<string, Index>>();
+            foreach (DataRow dr in dsIndexes.Tables[0].Rows)
+            {
+                string SchemaTable = dr[0].ToString();
+                if (dictRet.ContainsKey(SchemaTable))
+                {
+                    if (!dictRet[SchemaTable].ContainsKey(dr[1].ToString()))
+                    {
+                        dictRet[SchemaTable].Add(dr[1].ToString(), 
+                            new Index(dr[1].ToString(), Convert.ToInt32(dr[3]), Convert.ToBoolean(dr[4]), Convert.ToBoolean(dr[5]), Convert.ToBoolean(dr[6]), new List<string>((dr[2].ToString()).Split(','))));
+                    }
+                }
+                else
+                {
+
+                    dictRet.Add(SchemaTable,
+                        new Dictionary<string, Index> ()
+                        { 
+                        { dr[1].ToString(),
+                        new Index(dr[1].ToString(), Convert.ToInt32(dr[3]), Convert.ToBoolean(dr[4]), Convert.ToBoolean(dr[5]), Convert.ToBoolean(dr[6]), new List<string>((dr[2].ToString()).Split(',')))
+                        } 
+                        });
+                }
+            }
+            return dictRet;
+        }
+        private Dictionary<string, Dictionary<string, ForeignKey>> GetFKDictionary(DataSet dsFK) 
+        {
+            Dictionary<string, Dictionary<string, ForeignKey>> dictRet = new Dictionary<string, Dictionary<string, ForeignKey>>();
+            foreach (DataRow dr in dsFK.Tables[0].Rows) 
+            {
+                string SchemaTable = dr[1].ToString();
+                if (dictRet.ContainsKey(SchemaTable))
+                {
+                    var fkDict = dictRet[SchemaTable];
+                    if (fkDict.ContainsKey(dr[0].ToString()))
+                    {//этот FK есть
+                        fkDict[dr[0].ToString()].refs.Add(
+                            new ForeignKeyRefs(dr[1].ToString(), dr[2].ToString(), dr[3].ToString(), dr[4].ToString(), dr[5].ToString(), dr[6].ToString())
+                            );
+
+                    }
+                    else 
+                    {
+                        fkDict.Add(dr[0].ToString(), new ForeignKey(dr[0].ToString(),
+                                new List<ForeignKeyRefs>() {
+                                    new ForeignKeyRefs(dr[1].ToString(), dr[2].ToString(), dr[3].ToString(), dr[4].ToString(),dr[5].ToString(),dr[6].ToString())
+                                }));
+                    }
+                }
+                else 
+                {
+                    dictRet.Add(SchemaTable, new Dictionary<string,ForeignKey>()
+                        {
+                        { dr[0].ToString(), new ForeignKey(dr[0].ToString(),
+                                new List<ForeignKeyRefs>() {
+                                    new ForeignKeyRefs(dr[1].ToString(), dr[2].ToString(), dr[3].ToString(), dr[4].ToString(),dr[5].ToString(),dr[6].ToString())
+                                }) 
+                                
+                        }
+                    });
+                }
+            }
+            return dictRet;
+        }
+
+        private List<string> GetDefaultsFromDict(Dictionary<string, Dictionary<string, List<string>>> defaults, string tableName, string columnName)
+        {
+            if (defaults.ContainsKey(tableName))
+            {
+                if (defaults[tableName].ContainsKey(columnName)) 
+                {
+                    return defaults[tableName][columnName]; 
+                }
+            }
+            return new List<string> { "","" };
+        }
+        private DataSet execute(string sSQL)
+        {
+            ISQLGetConnection _connection = new SQLDBConnection(_connString);
+            ISQLExecutor _executor = new SQLExecutor();
+            return _executor.ExecuteSQL(_connection.GetConnection(), sSQL);
+        }
+        private DataSet execute(string sSQLTbl1, string sSQLTbl2, string sSQLInd, string sSQLfk)
+        {
+            ISQLGetConnection _connection = new SQLDBConnection(_connString);
+            ISQLExecutor _executor = new SQLExecutor();
+            return _executor.ExecuteSQL(_connection.GetConnection(), sSQLTbl1, sSQLTbl2, sSQLInd, sSQLfk);
+        }
+
+
+        /*3333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333*/
+
+
         public int GetRowCount(UInt64 objId) 
         {
             if (dictRowsCount.ContainsKey(objId))
@@ -41,22 +370,25 @@ namespace DBComparerLibrary
             else 
                 return 0;
         }
-        public Dictionary<string, Column> GetColums(UInt64 objId) 
+        public Dictionary<string, ddColumn> GetColums(UInt64 objId) 
         {
             if (dictColumns.ContainsKey(objId))
                 return dictColumns[objId];
             else
                 return null;
         }
-        public Dictionary<string, Index> GetIndexes(UInt64 objId) 
+        public Dictionary<string, ddIndex> GetIndexes(UInt64 objId) 
         {
-            if (dictIndexes.ContainsKey(objId))
-                return dictIndexes[objId];
+            if (dddictIndexes.ContainsKey(objId))
+                return dddictIndexes[objId];
             else
                 return null;
         }
-        public void GetDataFromDB() 
+       /* public void GetDataFromDB() 
         {
+
+
+
 
             Thread t_sys = new Thread(new ThreadStart(GetSysObjects)) { IsBackground = true };
             Thread t_col = new Thread(new ThreadStart(GetSysColumns)) { IsBackground = true };
@@ -185,7 +517,7 @@ WHERE o.Type = 'U'
         AND LEFT(i.Name, 1) <> '_'";
             try
             {
-                dictIndexes = GetIndexesDictionary(execute(sSQL));
+                dddictIndexes = GetIndexesDictionary(execute(sSQL));
             }
             catch (Exception ex)
             {
@@ -218,16 +550,11 @@ GROUP BY p.object_id ,
             }
             RowsCountOKflag = true;
         }
-       
+       */
 
-        private DataSet execute(string sSQL) 
-        {
-            ISQLGetConnection _connection = new SQLDBConnection(_connString);
-            ISQLExecutor _executor = new SQLExecutor();
-            return _executor.ExecuteSQL(_connection.GetConnection(), sSQL);
-        }
+        
         /* ОБРАБОТКА КОЛИЧЕСТВА ЗАПИСЕЙ*/
-        private Dictionary<UInt64, int> GetRowsCountDictionary(DataSet ds)
+       /* private Dictionary<UInt64, int> GetRowsCountDictionary(DataSet ds)
         {
             Dictionary<UInt64, int> dictRet = new Dictionary<UInt64, int>();
             foreach (DataRow dr in ds.Tables[0].Rows)
@@ -235,11 +562,11 @@ GROUP BY p.object_id ,
                 dictRet.Add(Convert.ToUInt64(dr[0]), Convert.ToInt32(dr[1]));
             }
             return dictRet;
-        }
+        }*/
         /*ОБРАБОТКА ИНДЕКСОВ*/
-        private Dictionary<UInt64, Dictionary<string, Index>> GetIndexesDictionary(DataSet ds)
+        /*private Dictionary<UInt64, Dictionary<string, ddIndex>> GetIndexesDictionary(DataSet ds)
         {
-            Dictionary<UInt64, Dictionary<string, Index>> dictRet = new Dictionary<UInt64, Dictionary<string, Index>>();
+            Dictionary<UInt64, Dictionary<string, ddIndex>> dictRet = new Dictionary<UInt64, Dictionary<string, ddIndex>>();
             foreach (DataRow dr in ds.Tables[0].Rows)
             {
                 if (dictRet.ContainsKey(Convert.ToUInt64(dr[0])))
@@ -250,20 +577,20 @@ GROUP BY p.object_id ,
                     }
                     else
                     {
-                        dictRet[Convert.ToUInt64(dr[0])].Add(dr[3].ToString(), new Index(dr[3].ToString(), Convert.ToDateTime(dr[1]), Convert.ToDateTime(dr[2]), dr[4].ToString()));
+                        dictRet[Convert.ToUInt64(dr[0])].Add(dr[3].ToString(), new ddIndex(dr[3].ToString(), Convert.ToDateTime(dr[1]), Convert.ToDateTime(dr[2]), dr[4].ToString()));
                     }
                 }
                 else
                 {
-                    dictRet.Add(Convert.ToUInt64(dr[0]), new Dictionary<string, Index>() { { dr[3].ToString(), new Index(dr[3].ToString(), Convert.ToDateTime(dr[1]), Convert.ToDateTime(dr[2]), dr[4].ToString()) } });
+                    dictRet.Add(Convert.ToUInt64(dr[0]), new Dictionary<string, ddIndex>() { { dr[3].ToString(), new ddIndex(dr[3].ToString(), Convert.ToDateTime(dr[1]), Convert.ToDateTime(dr[2]), dr[4].ToString()) } });
                 }
             }
             return dictRet;
-        }
+        }*/
         /*ОБРАБОТКА СТОЛБЦОВ*/
-        private Dictionary<UInt64, Dictionary<string, Column>> GetColumnsDictionary(DataSet ds)
+        /*private Dictionary<UInt64, Dictionary<string, ddColumn>> GetColumnsDictionary(DataSet ds)
         {
-            Dictionary<UInt64, Dictionary<string, Column>> dictRet = new Dictionary<UInt64, Dictionary<string, Column>>();
+            Dictionary<UInt64, Dictionary<string, ddColumn>> dictRet = new Dictionary<UInt64, Dictionary<string, ddColumn>>();
             foreach (DataRow dr in ds.Tables[0].Rows)
             {
                 if (dictRet.ContainsKey(Convert.ToUInt64(dr[0])))
@@ -271,21 +598,21 @@ GROUP BY p.object_id ,
                     if (!dictRet[Convert.ToUInt64(dr[0])].ContainsKey(dr[1].ToString()))
                     {
                         dictRet[Convert.ToUInt64(dr[0])].Add(dr[1].ToString(),
-                            new Column(dr[1].ToString(), Convert.ToInt32(dr[2]), dr[3].ToString(), Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7])));
+                            new ddColumn(dr[1].ToString(), Convert.ToInt32(dr[2]), dr[3].ToString(), Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7])));
                     }
                 }
                 else
                 {
                     dictRet.Add(Convert.ToUInt64(dr[0]),
-                        new Dictionary<string, Column>() { { dr[1].ToString(),
-                                new Column(dr[1].ToString(),Convert.ToInt32(dr[2]),dr[3].ToString(), Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]),Convert.ToBoolean(dr[7])) } });
+                        new Dictionary<string, ddColumn>() { { dr[1].ToString(),
+                                new ddColumn(dr[1].ToString(),Convert.ToInt32(dr[2]),dr[3].ToString(), Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]),Convert.ToBoolean(dr[7])) } });
                 }
             }
             return dictRet;
-        }
+        }*/
 
         /*ОБРАБОТКА ТИПОВ*/
-        private Dictionary<int, string> GetTypesDictionary(DataSet ds)
+        /*private Dictionary<int, string> GetTypesDictionary(DataSet ds)
         {
             Dictionary<int, string> dictRet = new Dictionary<int, string>();
             foreach (DataRow dr in ds.Tables[0].Rows)
@@ -296,6 +623,11 @@ GROUP BY p.object_id ,
                 }
             }
             return dictRet;
-        }
+        }*/
+
+
+        
+
+
     }
 }

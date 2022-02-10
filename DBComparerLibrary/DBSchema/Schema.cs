@@ -1,36 +1,28 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace DBComparerLibrary.DBSchema
 {
+   
     public class Schema : IEquatable<Schema>
     {
-        public Schema(string name, int schema_id)
+        public Schema(string sch_Name, string sch_Owner)
         {
-            Name = name;
-            Schema_id = schema_id;
-            tables = new Dictionary<string, Table>();
-            views = new Dictionary<string, View>();
+            SchemaName = sch_Name.Trim();
+            Owner = sch_Owner.Trim();
         }
 
-        public string Name { get; }
-        public int Schema_id { get; }//не участвует в сравнении
-        public Dictionary<string, Table> tables;
-        public Dictionary<string, View> views;
+        public string SchemaName { get; }
+        public string Owner { get; }
 
         public bool Equals(Schema other)
         {
             if (other == null)
                 return false;
 
-            return CollectionComparer.DictEquals(this.tables, other.tables) &&
-                CollectionComparer.DictEquals(this.views, other.views) &&
-                (
-                    object.ReferenceEquals(this.Name, other.Name) ||
-                    this.Name != null &&
-                    this.Name.Equals(other.Name)
-                );
+            return Comparer.CompareStrings(this.Owner, other.Owner) &&
+                Comparer.CompareStrings(this.SchemaName, other.SchemaName);
         }
     }
 }
