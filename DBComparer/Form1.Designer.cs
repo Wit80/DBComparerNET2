@@ -54,21 +54,13 @@
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.backgroundWorker2 = new System.ComponentModel.BackgroundWorker();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.labColorDifferent = new System.Windows.Forms.Label();
-            this.labColorEpson = new System.Windows.Forms.Label();
-            this.labColorEqual = new System.Windows.Forms.Label();
             this.treeView1 = new System.Windows.Forms.TreeView();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
-            this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.tpInfo = new System.Windows.Forms.TabPage();
-            this.splitContainer3 = new System.Windows.Forms.SplitContainer();
+            this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.richTextBox2 = new System.Windows.Forms.RichTextBox();
-            this.tpSQL = new System.Windows.Forms.TabPage();
-            this.splitContainer4 = new System.Windows.Forms.SplitContainer();
-            this.richTextBox3 = new System.Windows.Forms.RichTextBox();
-            this.richTextBox4 = new System.Windows.Forms.RichTextBox();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.tsNodeInfo = new System.Windows.Forms.ToolStripStatusLabel();
             this.menuStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.tsDBInfo.SuspendLayout();
@@ -78,19 +70,12 @@
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
-            this.tabControl1.SuspendLayout();
-            this.tpInfo.SuspendLayout();
-            this.splitContainer3.Panel1.SuspendLayout();
-            this.splitContainer3.Panel2.SuspendLayout();
-            this.splitContainer3.SuspendLayout();
-            this.tpSQL.SuspendLayout();
-            this.splitContainer4.Panel1.SuspendLayout();
-            this.splitContainer4.Panel2.SuspendLayout();
-            this.splitContainer4.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
             // 
+            this.menuStrip1.GripMargin = new System.Windows.Forms.Padding(2, 2, 0, 2);
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(28, 28);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
@@ -100,7 +85,8 @@
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1049, 24);
+            this.menuStrip1.Padding = new System.Windows.Forms.Padding(11, 4, 0, 4);
+            this.menuStrip1.Size = new System.Drawing.Size(1923, 42);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -112,33 +98,33 @@
             this.saveFileMenu,
             this.closeFileMenu});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(62, 34);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // newFileMenu
             // 
             this.newFileMenu.Name = "newFileMenu";
-            this.newFileMenu.Size = new System.Drawing.Size(103, 22);
+            this.newFileMenu.Size = new System.Drawing.Size(182, 40);
             this.newFileMenu.Text = "New";
             this.newFileMenu.Click += new System.EventHandler(this.newFileMenu_Click);
             // 
             // openFileMenu
             // 
             this.openFileMenu.Name = "openFileMenu";
-            this.openFileMenu.Size = new System.Drawing.Size(103, 22);
+            this.openFileMenu.Size = new System.Drawing.Size(182, 40);
             this.openFileMenu.Text = "Open";
             this.openFileMenu.Click += new System.EventHandler(this.openFileMenu_Click);
             // 
             // saveFileMenu
             // 
             this.saveFileMenu.Name = "saveFileMenu";
-            this.saveFileMenu.Size = new System.Drawing.Size(103, 22);
+            this.saveFileMenu.Size = new System.Drawing.Size(182, 40);
             this.saveFileMenu.Text = "Save";
             // 
             // closeFileMenu
             // 
             this.closeFileMenu.Name = "closeFileMenu";
-            this.closeFileMenu.Size = new System.Drawing.Size(103, 22);
+            this.closeFileMenu.Size = new System.Drawing.Size(182, 40);
             this.closeFileMenu.Text = "Close";
             // 
             // editToolStripMenuItem
@@ -147,37 +133,37 @@
             this.copyToolStripMenuItem,
             this.findToolStripMenuItem});
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
-            this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
+            this.editToolStripMenuItem.Size = new System.Drawing.Size(66, 34);
             this.editToolStripMenuItem.Text = "Edit";
             // 
             // copyToolStripMenuItem
             // 
             this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            this.copyToolStripMenuItem.Size = new System.Drawing.Size(102, 22);
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(178, 40);
             this.copyToolStripMenuItem.Text = "Copy";
             // 
             // findToolStripMenuItem
             // 
             this.findToolStripMenuItem.Name = "findToolStripMenuItem";
-            this.findToolStripMenuItem.Size = new System.Drawing.Size(102, 22);
+            this.findToolStripMenuItem.Size = new System.Drawing.Size(178, 40);
             this.findToolStripMenuItem.Text = "Find";
             // 
             // viewToolStripMenuItem
             // 
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
-            this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(75, 34);
             this.viewToolStripMenuItem.Text = "View";
             // 
             // toolsToolStripMenuItem
             // 
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
-            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
+            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(78, 34);
             this.toolsToolStripMenuItem.Text = "Tools";
             // 
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(74, 34);
             this.helpToolStripMenuItem.Text = "Help";
             // 
             // toolStrip1
@@ -186,10 +172,10 @@
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsNew,
             this.tsOpen});
-            this.toolStrip1.Location = new System.Drawing.Point(0, 24);
+            this.toolStrip1.Location = new System.Drawing.Point(0, 42);
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Padding = new System.Windows.Forms.Padding(0, 0, 2, 0);
-            this.toolStrip1.Size = new System.Drawing.Size(1049, 25);
+            this.toolStrip1.Padding = new System.Windows.Forms.Padding(0, 0, 4, 0);
+            this.toolStrip1.Size = new System.Drawing.Size(1923, 40);
             this.toolStrip1.TabIndex = 1;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -199,7 +185,7 @@
             this.tsNew.Image = ((System.Drawing.Image)(resources.GetObject("tsNew.Image")));
             this.tsNew.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsNew.Name = "tsNew";
-            this.tsNew.Size = new System.Drawing.Size(35, 22);
+            this.tsNew.Size = new System.Drawing.Size(59, 34);
             this.tsNew.Text = "New";
             this.tsNew.Click += new System.EventHandler(this.newFileMenu_Click);
             // 
@@ -209,7 +195,7 @@
             this.tsOpen.Image = ((System.Drawing.Image)(resources.GetObject("tsOpen.Image")));
             this.tsOpen.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.tsOpen.Name = "tsOpen";
-            this.tsOpen.Size = new System.Drawing.Size(40, 22);
+            this.tsOpen.Size = new System.Drawing.Size(68, 34);
             this.tsOpen.Text = "Open";
             this.tsOpen.Click += new System.EventHandler(this.openFileMenu_Click);
             // 
@@ -223,33 +209,31 @@
             this.tsProcessImage1,
             this.tsProcessImage2,
             this.tsLabelEquals});
-            this.tsDBInfo.Location = new System.Drawing.Point(0, 49);
+            this.tsDBInfo.Location = new System.Drawing.Point(0, 82);
             this.tsDBInfo.Name = "tsDBInfo";
-            this.tsDBInfo.Padding = new System.Windows.Forms.Padding(0, 0, 2, 0);
-            this.tsDBInfo.Size = new System.Drawing.Size(1049, 25);
+            this.tsDBInfo.Padding = new System.Windows.Forms.Padding(0, 0, 4, 0);
+            this.tsDBInfo.Size = new System.Drawing.Size(1923, 37);
             this.tsDBInfo.TabIndex = 2;
             // 
             // tsDB1Info
             // 
             this.tsDB1Info.Font = new System.Drawing.Font("Times New Roman", 12F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tsDB1Info.Name = "tsDB1Info";
-            this.tsDB1Info.Size = new System.Drawing.Size(114, 22);
-            this.tsDB1Info.Text = "toolStripLabel1";
+            this.tsDB1Info.Size = new System.Drawing.Size(0, 31);
             // 
             // tsDB2Info
             // 
             this.tsDB2Info.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.tsDB2Info.Font = new System.Drawing.Font("Times New Roman", 12F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tsDB2Info.Name = "tsDB2Info";
-            this.tsDB2Info.Size = new System.Drawing.Size(114, 22);
-            this.tsDB2Info.Text = "toolStripLabel2";
+            this.tsDB2Info.Size = new System.Drawing.Size(0, 31);
             // 
             // tsProcessImage1
             // 
             this.tsProcessImage1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.tsProcessImage1.Image = global::DBComparer.Properties.Resources.progress;
             this.tsProcessImage1.Name = "tsProcessImage1";
-            this.tsProcessImage1.Size = new System.Drawing.Size(28, 28);
+            this.tsProcessImage1.Size = new System.Drawing.Size(28, 31);
             this.tsProcessImage1.Text = "toolStripLabel1";
             this.tsProcessImage1.Visible = false;
             // 
@@ -259,7 +243,7 @@
             this.tsProcessImage2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.tsProcessImage2.Image = global::DBComparer.Properties.Resources.progress;
             this.tsProcessImage2.Name = "tsProcessImage2";
-            this.tsProcessImage2.Size = new System.Drawing.Size(28, 28);
+            this.tsProcessImage2.Size = new System.Drawing.Size(28, 31);
             this.tsProcessImage2.Text = "toolStripLabel1";
             this.tsProcessImage2.Visible = false;
             // 
@@ -270,7 +254,7 @@
             this.tsLabelEquals.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tsLabelEquals.ForeColor = System.Drawing.Color.Brown;
             this.tsLabelEquals.Name = "tsLabelEquals";
-            this.tsLabelEquals.Size = new System.Drawing.Size(22, 22);
+            this.tsLabelEquals.Size = new System.Drawing.Size(40, 31);
             this.tsLabelEquals.Text = "бд";
             // 
             // backgroundWorker1
@@ -286,66 +270,21 @@
             // splitContainer1
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer1.Location = new System.Drawing.Point(0, 74);
+            this.splitContainer1.Location = new System.Drawing.Point(0, 119);
+            this.splitContainer1.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.splitContainer1.Name = "splitContainer1";
             // 
             // splitContainer1.Panel1
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.splitContainer2);
+            this.splitContainer1.Panel1.Controls.Add(this.treeView1);
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.tabControl1);
-            this.splitContainer1.Size = new System.Drawing.Size(1049, 566);
-            this.splitContainer1.SplitterDistance = 320;
+            this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
+            this.splitContainer1.Size = new System.Drawing.Size(1923, 1041);
+            this.splitContainer1.SplitterDistance = 357;
+            this.splitContainer1.SplitterWidth = 7;
             this.splitContainer1.TabIndex = 3;
-            // 
-            // splitContainer2
-            // 
-            this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer2.Location = new System.Drawing.Point(0, 0);
-            this.splitContainer2.Name = "splitContainer2";
-            this.splitContainer2.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            // 
-            // splitContainer2.Panel1
-            // 
-            this.splitContainer2.Panel1.Controls.Add(this.labColorDifferent);
-            this.splitContainer2.Panel1.Controls.Add(this.labColorEpson);
-            this.splitContainer2.Panel1.Controls.Add(this.labColorEqual);
-            // 
-            // splitContainer2.Panel2
-            // 
-            this.splitContainer2.Panel2.Controls.Add(this.treeView1);
-            this.splitContainer2.Size = new System.Drawing.Size(320, 566);
-            this.splitContainer2.SplitterDistance = 83;
-            this.splitContainer2.TabIndex = 0;
-            // 
-            // labColorDifferent
-            // 
-            this.labColorDifferent.AutoSize = true;
-            this.labColorDifferent.Location = new System.Drawing.Point(12, 3);
-            this.labColorDifferent.Name = "labColorDifferent";
-            this.labColorDifferent.Size = new System.Drawing.Size(16, 13);
-            this.labColorDifferent.TabIndex = 6;
-            this.labColorDifferent.Text = "---";
-            // 
-            // labColorEpson
-            // 
-            this.labColorEpson.AutoSize = true;
-            this.labColorEpson.Location = new System.Drawing.Point(12, 21);
-            this.labColorEpson.Name = "labColorEpson";
-            this.labColorEpson.Size = new System.Drawing.Size(16, 13);
-            this.labColorEpson.TabIndex = 5;
-            this.labColorEpson.Text = "---";
-            // 
-            // labColorEqual
-            // 
-            this.labColorEqual.AutoSize = true;
-            this.labColorEqual.Location = new System.Drawing.Point(12, 38);
-            this.labColorEqual.Name = "labColorEqual";
-            this.labColorEqual.Size = new System.Drawing.Size(16, 13);
-            this.labColorEqual.TabIndex = 4;
-            this.labColorEqual.Text = "---";
             // 
             // treeView1
             // 
@@ -353,9 +292,10 @@
             this.treeView1.ImageIndex = 0;
             this.treeView1.ImageList = this.imageList1;
             this.treeView1.Location = new System.Drawing.Point(0, 0);
+            this.treeView1.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.treeView1.Name = "treeView1";
             this.treeView1.SelectedImageIndex = 0;
-            this.treeView1.Size = new System.Drawing.Size(320, 479);
+            this.treeView1.Size = new System.Drawing.Size(357, 1041);
             this.treeView1.TabIndex = 0;
             this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
             // 
@@ -366,58 +306,36 @@
             this.imageList1.Images.SetKeyName(0, "data_96285.ico");
             this.imageList1.Images.SetKeyName(1, "60.png");
             this.imageList1.Images.SetKeyName(2, "106.png");
-            this.imageList1.Images.SetKeyName(3, "34.png");
-            this.imageList1.Images.SetKeyName(4, "4.png");
-            this.imageList1.Images.SetKeyName(5, "89.png");
-            this.imageList1.Images.SetKeyName(6, "49.png");
+            this.imageList1.Images.SetKeyName(3, "89.png");
             // 
-            // tabControl1
+            // splitContainer2
             // 
-            this.tabControl1.Controls.Add(this.tpInfo);
-            this.tabControl1.Controls.Add(this.tpSQL);
-            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tabControl1.Location = new System.Drawing.Point(0, 0);
-            this.tabControl1.Name = "tabControl1";
-            this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(725, 566);
-            this.tabControl1.TabIndex = 0;
+            this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer2.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer2.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.splitContainer2.Name = "splitContainer2";
             // 
-            // tpInfo
+            // splitContainer2.Panel1
             // 
-            this.tpInfo.Controls.Add(this.splitContainer3);
-            this.tpInfo.Location = new System.Drawing.Point(4, 22);
-            this.tpInfo.Name = "tpInfo";
-            this.tpInfo.Padding = new System.Windows.Forms.Padding(3);
-            this.tpInfo.Size = new System.Drawing.Size(717, 540);
-            this.tpInfo.TabIndex = 0;
-            this.tpInfo.Text = "Информация";
-            this.tpInfo.UseVisualStyleBackColor = true;
+            this.splitContainer2.Panel1.Controls.Add(this.richTextBox1);
             // 
-            // splitContainer3
+            // splitContainer2.Panel2
             // 
-            this.splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer3.Location = new System.Drawing.Point(3, 3);
-            this.splitContainer3.Name = "splitContainer3";
-            // 
-            // splitContainer3.Panel1
-            // 
-            this.splitContainer3.Panel1.Controls.Add(this.richTextBox1);
-            // 
-            // splitContainer3.Panel2
-            // 
-            this.splitContainer3.Panel2.Controls.Add(this.richTextBox2);
-            this.splitContainer3.Size = new System.Drawing.Size(711, 534);
-            this.splitContainer3.SplitterDistance = 235;
-            this.splitContainer3.TabIndex = 0;
+            this.splitContainer2.Panel2.Controls.Add(this.richTextBox2);
+            this.splitContainer2.Size = new System.Drawing.Size(1559, 1041);
+            this.splitContainer2.SplitterDistance = 518;
+            this.splitContainer2.SplitterWidth = 7;
+            this.splitContainer2.TabIndex = 0;
             // 
             // richTextBox1
             // 
             this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.richTextBox1.Font = new System.Drawing.Font("Consolas", 9.857143F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.richTextBox1.Location = new System.Drawing.Point(0, 0);
-            this.richTextBox1.Margin = new System.Windows.Forms.Padding(2);
+            this.richTextBox1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.richTextBox1.Name = "richTextBox1";
             this.richTextBox1.ReadOnly = true;
-            this.richTextBox1.Size = new System.Drawing.Size(235, 534);
+            this.richTextBox1.Size = new System.Drawing.Size(518, 1041);
             this.richTextBox1.TabIndex = 0;
             this.richTextBox1.Text = "";
             this.richTextBox1.WordWrap = false;
@@ -425,83 +343,52 @@
             // richTextBox2
             // 
             this.richTextBox2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.richTextBox2.Font = new System.Drawing.Font("Consolas", 9.857143F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.richTextBox2.Location = new System.Drawing.Point(0, 0);
-            this.richTextBox2.Margin = new System.Windows.Forms.Padding(2);
+            this.richTextBox2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.richTextBox2.Name = "richTextBox2";
             this.richTextBox2.ReadOnly = true;
-            this.richTextBox2.Size = new System.Drawing.Size(472, 534);
+            this.richTextBox2.Size = new System.Drawing.Size(1034, 1041);
             this.richTextBox2.TabIndex = 0;
             this.richTextBox2.Text = "";
             this.richTextBox2.WordWrap = false;
             // 
-            // tpSQL
+            // statusStrip1
             // 
-            this.tpSQL.Controls.Add(this.splitContainer4);
-            this.tpSQL.Location = new System.Drawing.Point(4, 22);
-            this.tpSQL.Name = "tpSQL";
-            this.tpSQL.Padding = new System.Windows.Forms.Padding(3);
-            this.tpSQL.Size = new System.Drawing.Size(717, 540);
-            this.tpSQL.TabIndex = 1;
-            this.tpSQL.Text = "SQL";
-            this.tpSQL.UseVisualStyleBackColor = true;
+            this.statusStrip1.ImageScalingSize = new System.Drawing.Size(28, 28);
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsNodeInfo});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 1160);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Padding = new System.Windows.Forms.Padding(2, 0, 26, 0);
+            this.statusStrip1.ShowItemToolTips = true;
+            this.statusStrip1.Size = new System.Drawing.Size(1923, 22);
+            this.statusStrip1.TabIndex = 4;
+            this.statusStrip1.Text = "statusStrip1";
             // 
-            // splitContainer4
+            // tsNodeInfo
             // 
-            this.splitContainer4.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer4.Location = new System.Drawing.Point(3, 3);
-            this.splitContainer4.Margin = new System.Windows.Forms.Padding(2);
-            this.splitContainer4.Name = "splitContainer4";
-            // 
-            // splitContainer4.Panel1
-            // 
-            this.splitContainer4.Panel1.Controls.Add(this.richTextBox3);
-            // 
-            // splitContainer4.Panel2
-            // 
-            this.splitContainer4.Panel2.Controls.Add(this.richTextBox4);
-            this.splitContainer4.Size = new System.Drawing.Size(711, 534);
-            this.splitContainer4.SplitterDistance = 243;
-            this.splitContainer4.SplitterWidth = 2;
-            this.splitContainer4.TabIndex = 0;
-            // 
-            // richTextBox3
-            // 
-            this.richTextBox3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.richTextBox3.Location = new System.Drawing.Point(0, 0);
-            this.richTextBox3.Margin = new System.Windows.Forms.Padding(2);
-            this.richTextBox3.Name = "richTextBox3";
-            this.richTextBox3.ReadOnly = true;
-            this.richTextBox3.Size = new System.Drawing.Size(243, 534);
-            this.richTextBox3.TabIndex = 0;
-            this.richTextBox3.Text = "";
-            this.richTextBox3.WordWrap = false;
-            // 
-            // richTextBox4
-            // 
-            this.richTextBox4.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.richTextBox4.Location = new System.Drawing.Point(0, 0);
-            this.richTextBox4.Margin = new System.Windows.Forms.Padding(2);
-            this.richTextBox4.Name = "richTextBox4";
-            this.richTextBox4.ReadOnly = true;
-            this.richTextBox4.Size = new System.Drawing.Size(466, 534);
-            this.richTextBox4.TabIndex = 0;
-            this.richTextBox4.Text = "";
-            this.richTextBox4.WordWrap = false;
+            this.tsNodeInfo.Name = "tsNodeInfo";
+            this.tsNodeInfo.Size = new System.Drawing.Size(0, 13);
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1049, 640);
+            this.ClientSize = new System.Drawing.Size(1923, 1182);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.tsDBInfo);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.menuStrip1);
+            this.Controls.Add(this.statusStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
-            this.MinimumSize = new System.Drawing.Size(1053, 645);
+            this.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.MinimumSize = new System.Drawing.Size(1896, 1094);
             this.Name = "Form1";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Сравнение двух баз данных SQL Server";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.toolStrip1.ResumeLayout(false);
@@ -512,18 +399,10 @@
             this.splitContainer1.Panel2.ResumeLayout(false);
             this.splitContainer1.ResumeLayout(false);
             this.splitContainer2.Panel1.ResumeLayout(false);
-            this.splitContainer2.Panel1.PerformLayout();
             this.splitContainer2.Panel2.ResumeLayout(false);
             this.splitContainer2.ResumeLayout(false);
-            this.tabControl1.ResumeLayout(false);
-            this.tpInfo.ResumeLayout(false);
-            this.splitContainer3.Panel1.ResumeLayout(false);
-            this.splitContainer3.Panel2.ResumeLayout(false);
-            this.splitContainer3.ResumeLayout(false);
-            this.tpSQL.ResumeLayout(false);
-            this.splitContainer4.Panel1.ResumeLayout(false);
-            this.splitContainer4.Panel2.ResumeLayout(false);
-            this.splitContainer4.ResumeLayout(false);
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -557,19 +436,11 @@
         private System.Windows.Forms.TreeView treeView1;
         private System.Windows.Forms.ImageList imageList1;
         private System.Windows.Forms.ToolStripLabel tsLabelEquals;
-        private System.Windows.Forms.SplitContainer splitContainer2;
-        private System.Windows.Forms.Label labColorDifferent;
-        private System.Windows.Forms.Label labColorEpson;
-        private System.Windows.Forms.Label labColorEqual;
-        private System.Windows.Forms.TabControl tabControl1;
-        private System.Windows.Forms.TabPage tpInfo;
-        private System.Windows.Forms.SplitContainer splitContainer3;
-        private System.Windows.Forms.TabPage tpSQL;
         private System.Windows.Forms.RichTextBox richTextBox1;
         private System.Windows.Forms.RichTextBox richTextBox2;
-        private System.Windows.Forms.SplitContainer splitContainer4;
-        private System.Windows.Forms.RichTextBox richTextBox3;
-        private System.Windows.Forms.RichTextBox richTextBox4;
+        private System.Windows.Forms.SplitContainer splitContainer2;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel tsNodeInfo;
     }
 }
 

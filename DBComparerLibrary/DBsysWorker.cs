@@ -10,26 +10,10 @@ namespace DBComparerLibrary
 {
     public class DBsysWorker
     {
-        public Dictionary<string, View> dictViews;
-        public Dictionary<string, Schema> dictSchemas;
-        public Dictionary<string, Table> dictTables;
+        private SortedDictionary<string, View> dictViews;
+        private SortedDictionary<string, Schema> dictSchemas;
+        private SortedDictionary<string, Table> dictTables;
 
-
-        public DataSet dsObjects;
-        public bool ObjectsOKflag = false;
-        public string ObjectsExceptionText;
-        //public DataSet dsColumns;
-        public Dictionary<UInt64, Dictionary<string, ddColumn>> dictColumns;
-        public bool ColumnsOKflag = false;
-        public string ColumnsExceptionText;
-        //public DataSet dsIndexes;
-        public Dictionary<UInt64, Dictionary<string, ddIndex>> dddictIndexes;
-        public bool IndexesOKflag = false;
-        public string IndexesExceptionText;
-        //public DataSet dsRowsCount;
-        public Dictionary<UInt64, int> dictRowsCount;
-        public bool RowsCountOKflag = false;
-        public string RowsCountExceptionText;
 
         private string _connString;
 
@@ -40,7 +24,7 @@ namespace DBComparerLibrary
         {
             _connString = connString;
         }
-        public void GetDataFromDB() 
+        public DataBase GetDataFromDB() 
         {
             try
             {
@@ -50,8 +34,30 @@ namespace DBComparerLibrary
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                throw new ComparerException(ex.Message);
             }
+            string ServerName = "";
+            string Database = "";
+            foreach (var item in _connString.Split(';')) 
+            {
+                string str = item.Trim();
+                if (str.StartsWith("Server=")) 
+                {
+                    ServerName = str.Substring(7, str.Length - 7);
+                    continue;
+                }
+                if (str.StartsWith("Initial Catalog="))
+                {
+                    Database = str.Substring(16, str.Length - 16);
+                    continue;
+                }
+                if (str.StartsWith("database="))
+                {
+                    Database = str.Substring(9, str.Length - 9);
+                }
+            }
+
+            return new DataBase(ServerName, Database, dictSchemas, dictTables, dictViews);
         }
         private void GetSysViews()
         {
@@ -61,7 +67,7 @@ namespace DBComparerLibrary
             }
             catch (Exception ex)
             {
-                ObjectsExceptionText = "Ошибка GetSysViews. Тип исключения: " + ex.GetType() + " : " + ex.Message;
+                throw new ComparerException("Ошибка GetSysViews.Тип исключения: " + ex.GetType() + " : " + ex.Message);
             }
         }
         private void GetSysSchemas()
@@ -72,61 +78,75 @@ namespace DBComparerLibrary
             }
             catch (Exception ex)
             {
-                ObjectsExceptionText = "Ошибка GetSysSchemas. Тип исключения: " + ex.GetType() + " : " + ex.Message;
+                throw new ComparerException("Ошибка GetSysSchemas. Тип исключения: " + ex.GetType() + " : " + ex.Message);
             }
         }
         private void GetSysTables() 
         {
             try
             {
-                dictTables = GetTablesDictionary(execute(SQLs.GetSQLTables_WithColumns(),SQLs.GetSQLTables_WithDefaults(), SQLs.GetSQLIndexes(), SQLs.GetSQLForeignKeys()));
+                dictTables = GetTablesDictionary(execute(SQLs.GetSQLTables_WithColumns(),SQLs.GetSQLTables_WithDefaultsAndComputed(), SQLs.GetSQLIndexes(), SQLs.GetSQLForeignKeys()));
 
             }
             catch (Exception ex)
             {
-                ObjectsExceptionText = "Ошибка GetSysTables. Тип исключения: " + ex.GetType() + " : " + ex.Message;
+                throw new ComparerException("Ошибка GetSysTables. Тип исключения: " + ex.GetType() + " : " + ex.Message);
             }
         }
         
         
-        private Dictionary<string, View> GetViewsDictionary(DataSet dsScript, DataSet dsColums)
+        private SortedDictionary<string, View> GetViewsDictionary(DataSet dsScript, DataSet dsColums)
         {
-            Dictionary<string, string> scripts = new Dictionary<string, string>();
+            Dictionary<string, string> scripts = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
             foreach (DataRow dr in dsScript.Tables[0].Rows)
             {
                 if (!scripts.ContainsKey(dr[0].ToString()))
                     scripts.Add(dr[0].ToString(), dr[1].ToString());
             }
-            Dictionary<string, View> dictRet = new Dictionary<string, View>();
+            SortedDictionary<string, View> dictRet = new SortedDictionary<string, View>();
             foreach (DataRow dr in dsColums.Tables[0].Rows)
             {
                 string SchemaView = dr[0].ToString();
                 if (dictRet.ContainsKey(SchemaView))
                 {
                     View tmpV = dictRet[SchemaView];
-                    if (!tmpV.columns.ContainsKey(dr[1].ToString()))
+                    if (dr[9].ToString().Length > 0) 
+                    {
+                        tmpV.tables.Add(dr[9].ToString());
+                    }
+                    else if (!tmpV.columns.ContainsKey(dr[1].ToString()))
                     {
                         tmpV.columns.Add(dr[1].ToString(), new Column(dr[1].ToString(), dr[2].ToString(), Convert.ToInt32(dr[3]),
-                                       Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7])));
+                                       Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7]),"","",dr[8].ToString()));
                     }
                 }
                 else
                 {
-                    dictRet.Add(SchemaView,
-                        new View(SchemaView, scripts[SchemaView],
-                           new Dictionary<string, Column>()
-                           {
+                    if (dr[9].ToString().Length > 0)
+                    {
+                        dictRet.Add(SchemaView,
+                            new View(SchemaView, scripts[SchemaView],
+                               new Dictionary<string, Column>(StringComparer.InvariantCultureIgnoreCase)
+                               , new List<string>() { dr[9].ToString()}));
+                    }
+                    else
+                    {
+                        dictRet.Add(SchemaView,
+                            new View(SchemaView, scripts[SchemaView],
+                               new Dictionary<string, Column>(StringComparer.InvariantCultureIgnoreCase)
+                               {
                                { dr[1].ToString(), new Column(dr[1].ToString(), dr[2].ToString(), Convert.ToInt32(dr[3]),
-                                       Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7])) }
-                           }));
+                                       Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7]),"","",dr[8].ToString()) }
+                               }, new List<string>()));
+                    }
                 }
             }
             return dictRet;
         }
 
-        private Dictionary<string, Schema> GetSchemasDictionary(DataSet dsSchemas)
+        private SortedDictionary<string, Schema> GetSchemasDictionary(DataSet dsSchemas)
         {
-            Dictionary<string, Schema> dictRet = new Dictionary<string, Schema>();
+            SortedDictionary<string, Schema> dictRet = new SortedDictionary<string, Schema>();
             foreach (DataRow dr in dsSchemas.Tables[0].Rows)
             {
                 if (!dictRet.ContainsKey(dr[0].ToString()))
@@ -136,11 +156,10 @@ namespace DBComparerLibrary
             }
             return dictRet;
         }
-        //private Dictionary<string, Table> GetTablesDictionary(DataSet dsTables,DataSet DF_constraint)
-        private Dictionary<string, Table> GetTablesDictionary(DataSet dsTablesItog)
+        private SortedDictionary<string, Table> GetTablesDictionary(DataSet dsTablesItog)
         {
             /**************************************DEFAULTS*************************************************/
-            Dictionary<string, Dictionary<string,List<string>>> defaults = new Dictionary<string, Dictionary<string, List<string>>>();
+            Dictionary<string, Dictionary<string,List<string>>> defaults = new Dictionary<string, Dictionary<string, List<string>>>(StringComparer.InvariantCultureIgnoreCase);
             foreach (DataRow dr in dsTablesItog.Tables[1].Rows)
             {
                 string SchemaTable = dr[0].ToString();
@@ -155,7 +174,7 @@ namespace DBComparerLibrary
                 else 
                 {
                     defaults.Add(SchemaTable,
-                        new Dictionary<string, List<string>>() 
+                        new Dictionary<string, List<string>>(StringComparer.InvariantCultureIgnoreCase)
                         {
                             { dr[1].ToString(),new List<string>(){ dr[2].ToString(),dr[3].ToString()} }
                         }
@@ -163,7 +182,7 @@ namespace DBComparerLibrary
                 }
             }
             /**************************************INDEXES*************************************************/
-            Dictionary<string, Dictionary<string, Index>> dictIndexes = new Dictionary<string, Dictionary<string, Index>>();
+            Dictionary<string, Dictionary<string, Index>> dictIndexes = new Dictionary<string, Dictionary<string, Index>>(StringComparer.InvariantCultureIgnoreCase);
             foreach (DataRow dr in dsTablesItog.Tables[2].Rows)
             {
                 string SchemaTable = dr[0].ToString();
@@ -172,23 +191,28 @@ namespace DBComparerLibrary
                     if (!dictIndexes[SchemaTable].ContainsKey(dr[1].ToString()))
                     {
                         dictIndexes[SchemaTable].Add(dr[1].ToString(),
-                            new Index(dr[1].ToString(), Convert.ToInt32(dr[3]), Convert.ToBoolean(dr[4]), Convert.ToBoolean(dr[5]), Convert.ToBoolean(dr[6]), new List<string>((dr[2].ToString()).Split(','))));
+                            new Index(dr[1].ToString(), Convert.ToInt32(dr[3]), Convert.ToBoolean(dr[4]), Convert.ToBoolean(dr[5]), Convert.ToBoolean(dr[6]), new Dictionary<string, bool>(StringComparer.InvariantCultureIgnoreCase) { { dr[2].ToString(), Convert.ToBoolean(dr[6]) } }, dr[7].ToString()));
+                    }
+                    else 
+                    {
+                        Index index = dictIndexes[SchemaTable][dr[1].ToString()];
+                        index.columns.Add(dr[2].ToString(), Convert.ToBoolean(dr[6]));
                     }
                 }
                 else
                 {
 
                     dictIndexes.Add(SchemaTable,
-                        new Dictionary<string, Index>()
+                        new Dictionary<string, Index>(StringComparer.InvariantCultureIgnoreCase)
                         {
                         { dr[1].ToString(),
-                        new Index(dr[1].ToString(), Convert.ToInt32(dr[3]), Convert.ToBoolean(dr[4]), Convert.ToBoolean(dr[5]), Convert.ToBoolean(dr[6]), new List<string>((dr[2].ToString()).Split(',')))
+                        new Index(dr[1].ToString(), Convert.ToInt32(dr[3]), Convert.ToBoolean(dr[4]), Convert.ToBoolean(dr[5]), Convert.ToBoolean(dr[6]), new Dictionary<string, bool>(StringComparer.InvariantCultureIgnoreCase) { { dr[2].ToString(), Convert.ToBoolean(dr[6]) } },dr[7].ToString())
                         }
                         });
                 }
             }
             /**************************************FK*************************************************/
-            Dictionary<string, Dictionary<string, ForeignKey>> dictFK = new Dictionary<string, Dictionary<string, ForeignKey>>();
+            Dictionary<string, Dictionary<string, ForeignKey>> dictFK = new Dictionary<string, Dictionary<string, ForeignKey>>(StringComparer.InvariantCultureIgnoreCase);
             foreach (DataRow dr in dsTablesItog.Tables[3].Rows)
             {
                 string SchemaTable = dr[1].ToString();
@@ -212,7 +236,7 @@ namespace DBComparerLibrary
                 }
                 else
                 {
-                    dictFK.Add(SchemaTable, new Dictionary<string, ForeignKey>()
+                    dictFK.Add(SchemaTable, new Dictionary<string, ForeignKey>(StringComparer.InvariantCultureIgnoreCase)
                         {
                         { dr[0].ToString(), new ForeignKey(dr[0].ToString(),
                                 new List<ForeignKeyRefs>() {
@@ -224,7 +248,7 @@ namespace DBComparerLibrary
                 }
             }
             /**************************************TABLES*************************************************/
-            Dictionary<string, Table> dictRet = new Dictionary<string, Table>();
+            SortedDictionary<string, Table> dictRet = new SortedDictionary<string, Table>();
             foreach (DataRow dr in dsTablesItog.Tables[0].Rows)
             {
                 string SchemaTable = dr[0].ToString();
@@ -236,7 +260,7 @@ namespace DBComparerLibrary
                     {
                         tmpT.columns.Add(dr[1].ToString(),
                             new Column(dr[1].ToString(), dr[2].ToString(), Convert.ToInt32(dr[3]),
-                                       Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7]), defs[0], defs[1]));
+                                       Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7]), defs[0], defs[1],dr[8].ToString()));
                         
                     }
                 }
@@ -246,19 +270,19 @@ namespace DBComparerLibrary
                     if (dictIndexes.ContainsKey(SchemaTable))
                         ind = dictIndexes[SchemaTable];
                     else
-                        ind = new Dictionary<string, Index>();
+                        ind = new Dictionary<string, Index>(StringComparer.InvariantCultureIgnoreCase);
                     Dictionary<string, ForeignKey> fk;
                     if (dictFK.ContainsKey(SchemaTable))
                         fk = dictFK[SchemaTable];
                     else
-                        fk = new Dictionary<string, ForeignKey>();
+                        fk = new Dictionary<string, ForeignKey>(StringComparer.InvariantCultureIgnoreCase);
 
                     dictRet.Add(SchemaTable,
-                        new Table(SchemaTable, new Dictionary<string, Column>()
+                        new Table(SchemaTable, new Dictionary<string, Column>(StringComparer.InvariantCultureIgnoreCase)
                         {
                             { dr[1].ToString(),
                             new Column(dr[1].ToString(), dr[2].ToString(), Convert.ToInt32(dr[3]),
-                                       Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7]),defs[0],defs[1])}
+                                       Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7]),defs[0],defs[1],dr[8].ToString())}
                             
                         }, ind, fk));
                 }
@@ -266,74 +290,7 @@ namespace DBComparerLibrary
             return dictRet;
         }
 
-        private Dictionary<string ,Dictionary<string, Index>> GetIndexesDictionary(DataSet dsIndexes)
-        {
-
-            Dictionary<string, Dictionary<string, Index>> dictRet = new Dictionary<string, Dictionary<string, Index>>();
-            foreach (DataRow dr in dsIndexes.Tables[0].Rows)
-            {
-                string SchemaTable = dr[0].ToString();
-                if (dictRet.ContainsKey(SchemaTable))
-                {
-                    if (!dictRet[SchemaTable].ContainsKey(dr[1].ToString()))
-                    {
-                        dictRet[SchemaTable].Add(dr[1].ToString(), 
-                            new Index(dr[1].ToString(), Convert.ToInt32(dr[3]), Convert.ToBoolean(dr[4]), Convert.ToBoolean(dr[5]), Convert.ToBoolean(dr[6]), new List<string>((dr[2].ToString()).Split(','))));
-                    }
-                }
-                else
-                {
-
-                    dictRet.Add(SchemaTable,
-                        new Dictionary<string, Index> ()
-                        { 
-                        { dr[1].ToString(),
-                        new Index(dr[1].ToString(), Convert.ToInt32(dr[3]), Convert.ToBoolean(dr[4]), Convert.ToBoolean(dr[5]), Convert.ToBoolean(dr[6]), new List<string>((dr[2].ToString()).Split(',')))
-                        } 
-                        });
-                }
-            }
-            return dictRet;
-        }
-        private Dictionary<string, Dictionary<string, ForeignKey>> GetFKDictionary(DataSet dsFK) 
-        {
-            Dictionary<string, Dictionary<string, ForeignKey>> dictRet = new Dictionary<string, Dictionary<string, ForeignKey>>();
-            foreach (DataRow dr in dsFK.Tables[0].Rows) 
-            {
-                string SchemaTable = dr[1].ToString();
-                if (dictRet.ContainsKey(SchemaTable))
-                {
-                    var fkDict = dictRet[SchemaTable];
-                    if (fkDict.ContainsKey(dr[0].ToString()))
-                    {//этот FK есть
-                        fkDict[dr[0].ToString()].refs.Add(
-                            new ForeignKeyRefs(dr[1].ToString(), dr[2].ToString(), dr[3].ToString(), dr[4].ToString(), dr[5].ToString(), dr[6].ToString())
-                            );
-
-                    }
-                    else 
-                    {
-                        fkDict.Add(dr[0].ToString(), new ForeignKey(dr[0].ToString(),
-                                new List<ForeignKeyRefs>() {
-                                    new ForeignKeyRefs(dr[1].ToString(), dr[2].ToString(), dr[3].ToString(), dr[4].ToString(),dr[5].ToString(),dr[6].ToString())
-                                }));
-                    }
-                }
-                else 
-                {
-                    dictRet.Add(SchemaTable, new Dictionary<string,ForeignKey>()
-                        {
-                        { dr[0].ToString(), new ForeignKey(dr[0].ToString(),
-                                new List<ForeignKeyRefs>() {
-                                    new ForeignKeyRefs(dr[1].ToString(), dr[2].ToString(), dr[3].ToString(), dr[4].ToString(),dr[5].ToString(),dr[6].ToString())
-                                }) 
-                                
-                        }
-                    });
-                }
-            }
-            return dictRet;
-        }
+        
 
         private List<string> GetDefaultsFromDict(Dictionary<string, Dictionary<string, List<string>>> defaults, string tableName, string columnName)
         {
@@ -358,275 +315,6 @@ namespace DBComparerLibrary
             ISQLExecutor _executor = new SQLExecutor();
             return _executor.ExecuteSQL(_connection.GetConnection(), sSQLTbl1, sSQLTbl2, sSQLInd, sSQLfk);
         }
-
-
-        /*3333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333*/
-
-
-        public int GetRowCount(UInt64 objId) 
-        {
-            if (dictRowsCount.ContainsKey(objId))
-                return dictRowsCount[objId];
-            else 
-                return 0;
-        }
-        public Dictionary<string, ddColumn> GetColums(UInt64 objId) 
-        {
-            if (dictColumns.ContainsKey(objId))
-                return dictColumns[objId];
-            else
-                return null;
-        }
-        public Dictionary<string, ddIndex> GetIndexes(UInt64 objId) 
-        {
-            if (dddictIndexes.ContainsKey(objId))
-                return dddictIndexes[objId];
-            else
-                return null;
-        }
-       /* public void GetDataFromDB() 
-        {
-
-
-
-
-            Thread t_sys = new Thread(new ThreadStart(GetSysObjects)) { IsBackground = true };
-            Thread t_col = new Thread(new ThreadStart(GetSysColumns)) { IsBackground = true };
-            Thread t_ind = new Thread(new ThreadStart(GetSysIndexes)) { IsBackground = true };
-            Thread t_rows = new Thread(new ThreadStart(GetSysRowsCount)) { IsBackground = true };
-
-            t_sys.Start();
-            t_col.Start();
-            t_ind.Start();
-            t_rows.Start();
-            Thread.Sleep(100);
-
-            while (!( ThreadState.Stopped == t_sys.ThreadState  && ThreadState.Stopped == t_col.ThreadState 
-                && ThreadState.Stopped == t_ind.ThreadState && ThreadState.Stopped == t_rows.ThreadState ))
-            {
-                Thread.Sleep(1000);
-            }
-            if (!ObjectsOKflag)
-                throw new ComparerException(ObjectsExceptionText);
-            if (!ColumnsOKflag)
-                throw new ComparerException(ColumnsExceptionText);
-            if (!IndexesOKflag)
-                throw new ComparerException(IndexesExceptionText);
-            if (!RowsCountOKflag)
-                throw new ComparerException(RowsCountExceptionText);
-        }
-        private void GetSysObjects() 
-        {
-            ObjectsOKflag = false;
-            string sSQL = @"
-SELECT @@ServerName AS serverName,
-        DB_NAME() AS dbName,
-        o.name as objectName,
-        o.object_id as objectId,
-        o.schema_id as schemaId,
-        s.name as schemaName,
-        o.type as objectType,
-        o.create_date as dtCreate,
-        o.modify_date as dtModif,
-		o.parent_object_id as parentObjId,
-		' ' as tblName,
-		GETDATE() as tblCreate,
-		GETDATE() as tblModify
-FROM sys.objects as o
-        INNER JOIN sys.schemas s ON o.schema_id = s.schema_id
-WHERE o.type in ('U','V','PK','UQ','F','C') and o.parent_object_id = 0
-union all
-SELECT @@ServerName AS serverName,
-        DB_NAME() AS dbName,
-        o.name as objectName,
-        o.object_id as objectId,
-        o.schema_id as schemaId,
-        s.name as schemaName,
-        o.type as objectType,
-        o.create_date as dtCreate,
-        o.modify_date as dtModif,
-		o.parent_object_id as parentObjId,
-		t.name as tblName,
-		t.create_date as tblCreate,
-		t.modify_date as tblModify
-FROM sys.objects as o
-        INNER JOIN sys.schemas s ON o.schema_id = s.schema_id
-		INNER JOIN sys.tables t ON o.parent_object_id = t.object_id
-WHERE o.type in ('U','V','PK','UQ','F','C') ";
-            try
-            {
-                dsObjects = execute(sSQL);
-            }
-            catch (Exception ex) 
-            {
-                ObjectsExceptionText = "Ошибка GetSysObjects. Тип исключения: " + ex.GetType() + " : " + ex.Message;
-            }
-            ObjectsOKflag = true;
-        }
-
-        private void GetSysColumns()
-        {
-            ColumnsOKflag = false;
-            string sSQL = @"
-SELECT  c.object_id as objectId,
-        c.name as columnName,
-        c.user_type_id as columnTypeId,
-        tn.typeName as columnTypName,
-		c.precision as prec,
-		c.scale as scale,
-		columnproperty(c.object_id, c.name, 'Precision') as maxSymbols,
-		c.is_nullable as isnullable		
-FROM sys.columns as c
-        INNER JOIN sys.objects o ON c.object_id = o.object_id
-		INNER JOIN sys.schemas s ON o.schema_id = s.schema_id
-		INNER JOIN (select t.user_type_id as typeID,
-		s.name + '.' + t.name as typeName
-from sys.types as t
-	INNER JOIN sys.schemas s ON t.schema_id = s.schema_id 
-	where s.name != 'sys'
-	union
-select t.user_type_id as typeID,
-		t.name  as typeName
-from sys.types as t
-	INNER JOIN sys.schemas s ON t.schema_id = s.schema_id 
-	where s.name = 'sys') tn on c.user_type_id = tn.typeID";
-            try
-            {
-                dictColumns = GetColumnsDictionary(execute(sSQL));
-            }
-            catch (Exception ex)
-            {
-                ColumnsExceptionText = "Ошибка GetSysColumns. Тип исключения: " + ex.GetType() + " : " + ex.Message;
-            }
-            ColumnsOKflag = true;
-        }
-        private void GetSysIndexes()
-        {
-            IndexesOKflag = false;
-            string sSQL = @"
-SELECT  o.object_id as objectId,
-        o.create_date as dtCreate,
-        o.modify_date as dtModif,
-        i.Name AS indexName,
-		COL_NAME(ic.object_id,ic.column_id) AS columnName
-FROM    sys.objects o
-        INNER JOIN sys.indexes i ON o.object_id = i.object_id
-        INNER JOIN sys.schemas s ON o.schema_id = s.schema_id
-		INNER JOIN sys.index_columns AS ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id  
-WHERE o.Type = 'U'
-        AND LEFT(i.Name, 1) <> '_'";
-            try
-            {
-                dddictIndexes = GetIndexesDictionary(execute(sSQL));
-            }
-            catch (Exception ex)
-            {
-                IndexesExceptionText = "Ошибка GetSysIndexes. Тип исключения: " + ex.GetType() + " : " + ex.Message;
-            }
-            IndexesOKflag = true;
-        }
-
-        private void GetSysRowsCount()
-        {
-            RowsCountOKflag = false;
-            string sSQL = @"
-select p.object_id as objectId,
-        SUM(p.Rows) AS rowsCount
-FROM sys.partitions p
-        JOIN sys.indexes i ON i.object_id = p.object_id
-                              AND i.index_id = p.index_id
-WHERE i.type_desc IN ( 'CLUSTERED', 'HEAP' )
-        AND OBJECT_SCHEMA_NAME(p.object_id) <> 'sys'
-GROUP BY p.object_id ,
-        i.type_desc ,
-        i.Name";
-            try
-            {
-                dictRowsCount = GetRowsCountDictionary(execute(sSQL));
-            }
-            catch (Exception ex)
-            {
-                RowsCountExceptionText = "Ошибка GetSysRowsCount. Тип исключения: " + ex.GetType() + " : " + ex.Message;
-            }
-            RowsCountOKflag = true;
-        }
-       */
-
-        
-        /* ОБРАБОТКА КОЛИЧЕСТВА ЗАПИСЕЙ*/
-       /* private Dictionary<UInt64, int> GetRowsCountDictionary(DataSet ds)
-        {
-            Dictionary<UInt64, int> dictRet = new Dictionary<UInt64, int>();
-            foreach (DataRow dr in ds.Tables[0].Rows)
-            {
-                dictRet.Add(Convert.ToUInt64(dr[0]), Convert.ToInt32(dr[1]));
-            }
-            return dictRet;
-        }*/
-        /*ОБРАБОТКА ИНДЕКСОВ*/
-        /*private Dictionary<UInt64, Dictionary<string, ddIndex>> GetIndexesDictionary(DataSet ds)
-        {
-            Dictionary<UInt64, Dictionary<string, ddIndex>> dictRet = new Dictionary<UInt64, Dictionary<string, ddIndex>>();
-            foreach (DataRow dr in ds.Tables[0].Rows)
-            {
-                if (dictRet.ContainsKey(Convert.ToUInt64(dr[0])))
-                {//эта таблица уже обрабатывалась
-                    if (dictRet[Convert.ToUInt64(dr[0])].ContainsKey(dr[3].ToString()))
-                    {//этот индекс встречался, добавляес столбец
-                        dictRet[Convert.ToUInt64(dr[0])][dr[3].ToString()].columns.Add(dr[4].ToString());
-                    }
-                    else
-                    {
-                        dictRet[Convert.ToUInt64(dr[0])].Add(dr[3].ToString(), new ddIndex(dr[3].ToString(), Convert.ToDateTime(dr[1]), Convert.ToDateTime(dr[2]), dr[4].ToString()));
-                    }
-                }
-                else
-                {
-                    dictRet.Add(Convert.ToUInt64(dr[0]), new Dictionary<string, ddIndex>() { { dr[3].ToString(), new ddIndex(dr[3].ToString(), Convert.ToDateTime(dr[1]), Convert.ToDateTime(dr[2]), dr[4].ToString()) } });
-                }
-            }
-            return dictRet;
-        }*/
-        /*ОБРАБОТКА СТОЛБЦОВ*/
-        /*private Dictionary<UInt64, Dictionary<string, ddColumn>> GetColumnsDictionary(DataSet ds)
-        {
-            Dictionary<UInt64, Dictionary<string, ddColumn>> dictRet = new Dictionary<UInt64, Dictionary<string, ddColumn>>();
-            foreach (DataRow dr in ds.Tables[0].Rows)
-            {
-                if (dictRet.ContainsKey(Convert.ToUInt64(dr[0])))
-                {// эту таблицу уже встречали
-                    if (!dictRet[Convert.ToUInt64(dr[0])].ContainsKey(dr[1].ToString()))
-                    {
-                        dictRet[Convert.ToUInt64(dr[0])].Add(dr[1].ToString(),
-                            new ddColumn(dr[1].ToString(), Convert.ToInt32(dr[2]), dr[3].ToString(), Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7])));
-                    }
-                }
-                else
-                {
-                    dictRet.Add(Convert.ToUInt64(dr[0]),
-                        new Dictionary<string, ddColumn>() { { dr[1].ToString(),
-                                new ddColumn(dr[1].ToString(),Convert.ToInt32(dr[2]),dr[3].ToString(), Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]),Convert.ToBoolean(dr[7])) } });
-                }
-            }
-            return dictRet;
-        }*/
-
-        /*ОБРАБОТКА ТИПОВ*/
-        /*private Dictionary<int, string> GetTypesDictionary(DataSet ds)
-        {
-            Dictionary<int, string> dictRet = new Dictionary<int, string>();
-            foreach (DataRow dr in ds.Tables[0].Rows)
-            {
-                if (!dictRet.ContainsKey(Convert.ToInt32(dr[0])))
-                {
-                    dictRet.Add(Convert.ToInt32(dr[0]), dr[1].ToString());
-                }
-            }
-            return dictRet;
-        }*/
-
-
-        
 
 
     }

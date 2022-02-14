@@ -7,7 +7,7 @@ namespace DBComparerLibrary.DBSchema
     
     public class Column : IEquatable<Column>
     {
-        public Column(string columnName, string typeName, int maxLength, int precision, int scale, int maxSymb, bool isNullable, string definition = "", string DF_name = "")
+        public Column(string columnName, string typeName, int maxLength, int precision, int scale, int maxSymb, bool isNullable, string definition = "", string DF_name = "", string collation = "")
         {
             ColumnName = columnName.Trim();
             TypeName = typeName.Trim();
@@ -18,6 +18,7 @@ namespace DBComparerLibrary.DBSchema
             IsNullable = isNullable;
             DefaultVal = definition.Trim();
             ConstraintName = DF_name.Trim();
+            CollationName = collation.Trim();
         }
 
         public string ColumnName { get; }
@@ -29,6 +30,7 @@ namespace DBComparerLibrary.DBSchema
         public bool IsNullable { get; }
         public string DefaultVal { get; }
         public string ConstraintName { get; }
+        public string CollationName { get; }
 
         public bool Equals(Column other)
         {
@@ -43,6 +45,7 @@ namespace DBComparerLibrary.DBSchema
                 Comparer.CompareStrings(this.ColumnName, other.ColumnName) &&
                 Comparer.CompareStrings(this.DefaultVal, other.DefaultVal) &&
                 Comparer.CompareStrings(this.ConstraintName, other.ConstraintName) &&
+                Comparer.CompareStrings(this.CollationName, other.CollationName) &&
                 Comparer.CompareStrings(this.TypeName, other.TypeName);
         }
     }

@@ -8,16 +8,16 @@ namespace DBComparerLibrary.DBSchema
     {
         public string dbServer { get; }// не участвует в сравнении
         public string dbName { get; }// не участвует в сравнении
-        public Dictionary<string, Schema> schemas { get; }
-        public Dictionary<string, Table> tables { get; }
-        public Dictionary<string, View> views { get; }
-        public DataBase(string dbServer, string dbName)
+        public SortedDictionary<string, Schema> schemas { get; }
+        public SortedDictionary<string, Table> tables { get; }
+        public SortedDictionary<string, View> views { get; }
+        public DataBase(string dbServer, string dbName, SortedDictionary<string, Schema> schs, SortedDictionary<string, Table> tbls, SortedDictionary<string, View> vws)
         {
             this.dbServer = dbServer.Trim();
             this.dbName = dbName.Trim();
-            schemas = new Dictionary<string, Schema>();
-            tables = new Dictionary<string, Table>();
-            views = new Dictionary<string, View>();
+            schemas = schs;
+            tables = tbls;
+            views = vws;
         }
 
         public bool Equals(DataBase other)

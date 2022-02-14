@@ -19,7 +19,25 @@ join sys.sql_modules m
         public static string GetSQLViews_WithColums()
         {
             return @"
-select schema_name(v.schema_id) + '.' + object_name(c.object_id) as view_name,
+select distinct schema_name(v.schema_id) + '.' + v.name as view_name,
+	'' as column_name,
+	 '' data_type,
+       '' as max_len,
+       '' as precision,
+	   '' as scale,
+	   '' as maxSymbols,
+	   '' as isnullable,
+	   '' as collation_name,
+       schema_name(o.schema_id) + '.' + o.name as referenced_entity_name,
+       o.type_desc as entity_type
+from sys.views v
+join sys.sql_expression_dependencies d
+     on d.referencing_id = v.object_id
+     and d.referenced_id is not null
+join sys.objects o
+     on o.object_id = d.referenced_id
+union all
+		  select schema_name(v.schema_id) + '.' + object_name(c.object_id) as view_name,
 	   c.name AS column_name,
 	   case 
 		when t.is_user_defined = 1 then s.name + '.' + type_name(c.user_type_id) 
@@ -29,7 +47,10 @@ select schema_name(v.schema_id) + '.' + object_name(c.object_id) as view_name,
        c.precision as precision,
 	   c.scale as scale,
 	   columnproperty(c.object_id, c.name, 'Precision') as maxSymbols,
-	   c.is_nullable as isnullable	
+	   c.is_nullable as isnullable,
+	   t.collation_name as collation_name,
+	   '' as referenced_entity_name,
+       '' as entity_type
 from sys.columns c
 join sys.views v     on v.object_id = c.object_id
 join sys.types t on c.user_type_id = t.user_type_id
@@ -58,60 +79,48 @@ select schema_name(tab.schema_id) + '.' + tab.name as table_name,
     col.precision,
 	col.scale as scale,
 	columnproperty(col.object_id, col.name, 'Precision') as maxSymbols,
-	col.is_nullable as isnullable
+	col.is_nullable as isnullable,
+	t.collation_name as collation_name
 from sys.tables as tab
     inner join sys.columns as col on tab.object_id = col.object_id
     left join sys.types as t on col.user_type_id = t.user_type_id
 	join sys.schemas s on t.schema_id = s.schema_id";
         }
 
-        public static string GetSQLTables_WithDefaults()
+        public static string GetSQLTables_WithDefaultsAndComputed()
         {
             return @"
+SELECT SCHEMA_NAME(o.schema_id) + '.' + OBJECT_NAME(c.object_id) as table_name, 
+    c.name AS column_name, 
+    c.definition as def,
+	'' as constraint_name
+FROM sys.computed_columns c
+  JOIN sys.objects o ON o.object_id = c.object_id
+union all
 select schema_name(t.schema_id) + '.' + t.name table_name,
     col.name as column_name,
-    con.definition,
+    con.definition as def,
     con.name as constraint_name
 from sys.default_constraints con
     left outer join sys.objects t
         on con.parent_object_id = t.object_id
     left outer join sys.all_columns col
         on con.parent_column_id = col.column_id
-        and con.parent_object_id = col.object_id";
+        and con.parent_object_id = col.object_id
+";
         }
 
         public static string GetSQLIndexes()
         {
             return @"
-select AAA.table_view as table_view, AAA.index_name as index_name, AAA.columns as columns, AAA.index_type as index_type, AAA.isunique as is_uniq, AAA.PKtype as ind_type, DDD.is_descending_key as is_descending
-from
-(select i.name as index_name,
-    substring(column_names, 1, len(column_names)-1) as columns,
-    i.type as index_type,
-    i.is_unique as isunique,
-	i.is_primary_key as PKtype,
-    schema_name(t.schema_id) + '.' + t.name as table_view
-from sys.objects t
-    inner join sys.indexes i
-        on t.object_id = i.object_id
-    cross apply (select col.name+ ', '
-                    from sys.index_columns ic
-                        inner join sys.columns col
-                            on ic.object_id = col.object_id
-                            and ic.column_id = col.column_id
-                    where ic.object_id = t.object_id
-                        and ic.index_id = i.index_id
-                            order by key_ordinal
-                            for xml path ('') ) D (column_names)
-where t.is_ms_shipped <> 1
-and index_id > 0
-) as AAA
-INNER JOIN (select schema_name(tab.schema_id) + '.'  + tab.name as table_view, 
-    pk.name as pk_name,
-    ic.index_column_id as column_id,
+select schema_name(tab.schema_id) + '.'  + tab.name as table_view, 
+    pk.name as index_name,
     col.name as column_name, 
-    tab.name as table_name,
-	ic.is_descending_key
+	pk.type as index_type,
+	pk.is_unique as isunique,
+	pk.is_primary_key as PKtype,
+	ic.is_descending_key,
+	pk.type_desc as clust
 from sys.tables tab
     inner join sys.indexes pk
         on tab.object_id = pk.object_id 
@@ -120,8 +129,7 @@ from sys.tables tab
         and ic.index_id = pk.index_id
     inner join sys.columns col
         on pk.object_id = col.object_id
-        and col.column_id = ic.column_id
-) as DDD on AAA.index_name = DDD.pk_name and AAA.table_view = DDD.table_view";
+        and col.column_id = ic.column_id";
         }
 
         public static string GetSQLForeignKeys()
