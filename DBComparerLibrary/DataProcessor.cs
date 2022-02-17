@@ -33,9 +33,9 @@ namespace DBComparerLibrary
             
             return new Dictionary<DbUnitsEnum, Dictionary<CompareItogEnum, List<string>>>() 
             {
-                { DbUnitsEnum.schema, Comparer.dbItemComtare<string,Schema>(db1.schemas, db2.schemas)},
-                { DbUnitsEnum.table,  Comparer.dbItemComtare<string, Table>(db1.tables, db2.tables)},
-                { DbUnitsEnum.view,  Comparer.dbItemComtare<string, View>(db1.views, db2.views)}
+                { DbUnitsEnum.schema, Comparer.dbItemCompare<string,Schema>(db1.schemas, db2.schemas)},
+                { DbUnitsEnum.table,  Comparer.dbItemCompare<string, Table>(db1.tables, db2.tables)},
+                { DbUnitsEnum.view,  Comparer.dbItemCompare<string, View>(db1.views, db2.views)}
             };
         }
         public static SQLScriptsList PrepareSQLList(DataBase db1, DataBase db2,SortedDictionary<int, string> path)
@@ -62,8 +62,7 @@ namespace DBComparerLibrary
                 {// Обе схемы есть
                     if (db1.schemas[SchemaName].Equals(db2.schemas[SchemaName]))
                     {// схемы одинаковые
-                        var script = SchemaScript(db1.schemas[SchemaName]);
-                        return new SQLScriptsList(script, script, new List<int>(),"Схемы одинаковы");
+                        return new SQLScriptsList(SchemaScript(db1.schemas[SchemaName]), SchemaScript(db2.schemas[SchemaName]), new List<int>(),"Схемы одинаковы");
                     }
                     else
                     {
@@ -94,8 +93,7 @@ namespace DBComparerLibrary
                 {// Обе есть
                     if (db1.tables[TableName].Equals(db2.tables[TableName]))
                     {// одинаковые
-                        var script = TableScript(db1.tables[TableName]);
-                        return new SQLScriptsList(script, script, new List<int>(), "Таблицы одинаковые");
+                        return new SQLScriptsList(TableScript(db1.tables[TableName]), TableScript(db2.tables[TableName]), new List<int>(), "Таблицы одинаковые");
                     }
                     else
                     {//различаются
@@ -124,8 +122,7 @@ namespace DBComparerLibrary
                 {// Обе есть
                     if (db1.views[TableName].Equals(db2.views[TableName]))
                     {// одинаковые
-                        var script = ViewScript(db1.views[TableName]);
-                        return new SQLScriptsList(script, script, new List<int>(), "Представления одинаковые");
+                        return new SQLScriptsList(ViewScript(db1.views[TableName]), ViewScript(db2.views[TableName]), new List<int>(), "Представления одинаковые");
                     }
                     else
                     {//различаются
@@ -172,23 +169,33 @@ namespace DBComparerLibrary
 
             }
             // PrimaryKey
-            bool pkFlag = false;
-            foreach (var index in table.indexes.Values) 
+            if (table.PrimaryKey.PkName.Length > 0)
             {
-                if (index.IsPrimary) 
-                {
-                    result.Add($",{Environment.NewLine}{new string(' ', 5)}CONSTRAINT [{index.IndexName}] PRIMARY KEY {index.Clustered} ([{String.Join("], [", new List<string>(index.columns.Keys).ToArray())}]){Environment.NewLine}");
-                    pkFlag = true;
-                }
+                result.Add(PkForScript(table.PrimaryKey));
             }
-            if(!pkFlag)
-                result.Add($"{Environment.NewLine}");
-            result.Add($") ON [PRIMARY]{Environment.NewLine}GO{Environment.NewLine}");
+            else
+            { 
+                result.Add($"{Environment.NewLine}"); 
+            }
+            result.Add($") {Environment.NewLine}GO{Environment.NewLine}");
             // indexes
             Indexes(table, result);
             //ForeignKey
             ForeignKeys(table, result);
             return result;
+        }
+        private static string PkForScript(PrimaryKey pk)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (var col in pk.columns)
+            {
+                sb.Append($"[{col.Key}] {(col.Value ? "DESC" : "ASC")},");
+
+            }
+            //удалим последнюю запятую
+            sb.Remove(sb.Length - 1, 1);
+            return ($",{Environment.NewLine}{new string(' ', 5)}CONSTRAINT [{pk.PkName}] PRIMARY KEY {pk.Clustered} ({sb.ToString()}){Environment.NewLine}");
+
         }
         private static SQLScriptsList TableScript(Table table1, Table table2) 
         {
@@ -265,83 +272,71 @@ namespace DBComparerLibrary
                 {
                     if (defColumnsName.Contains(columnKey))
                         continue;
+                    
+                    result1.Add(CreateColumnStr(table1.columns[columnKey]));
+                    result2.Add(CreateColumnStr(table2.columns[columnKey]));
                     if (!table1.columns[columnKey].Equals(table2.columns[columnKey]))
                     {//
                         difs.Add(GetCurrentLine(result1));
                     }
-                    result1.Add(CreateColumnStr(table1.columns[columnKey]));
-                    result2.Add(CreateColumnStr(table2.columns[columnKey]));
 
-                    iter++;
-                    if (iter < table1.columns.Count)
-                    {
-                        result1.Add($",");
-                        result1.Add($"{Environment.NewLine}");
-                    }
-                    if (iter < table2.columns.Count)
-                    {
-                        result2.Add($",");
-                        
-                        result2.Add($"{Environment.NewLine}");
-                    }
-                    
+                   
+                    result1.Add($",");
+                    result1.Add($"{Environment.NewLine}");
+                    result2.Add($",");
+                    result2.Add($"{Environment.NewLine}");
                 }
+                result1.RemoveAt(result1.Count - 1);
+                result1.RemoveAt(result1.Count - 1);
+                result2.RemoveAt(result2.Count - 1);
+                result2.RemoveAt(result2.Count - 1);
             }
 
             // PrimaryKey
             bool pkFlag1 = false;
             bool pkFlag2 = false;
-            Index pk1 = null;
-            Index pk2 = null;
-            foreach (var index in table1.indexes.Values)
+            if (table1.PrimaryKey.PkName.Length > 0)
             {
-                if (index.IsPrimary)
-                {
-                    pk1 = index;
-                    pkFlag1 = true;
-                    break;
-                    
-                }
+                pkFlag1 = true;
             }
-            foreach (var index in table2.indexes.Values)
+            if (table2.PrimaryKey.PkName.Length > 0)
             {
-                if (index.IsPrimary)
-                {
-                    pk2 = index;
-                    pkFlag2 = true;
-                    break;
-                    
-                }
+                pkFlag2 = true;
             }
             //Сравним PK
             if (pkFlag1 && pkFlag2)
             {
-                
-                result1.Add($",{Environment.NewLine}{new string(' ', 5)}CONSTRAINT [{pk1.IndexName}] PRIMARY KEY {pk1.Clustered} ([{String.Join("], [", new List<string>(pk1.columns.Keys).ToArray())}]){Environment.NewLine}");
-                result2.Add($",{Environment.NewLine}{new string(' ', 5)}CONSTRAINT [{pk2.IndexName}] PRIMARY KEY {pk2.Clustered} ([{String.Join("], [", new List<string>(pk2.columns.Keys).ToArray())}]){Environment.NewLine}");
-                if (!pk1.Equals(pk2))
+
+                result1.Add(PkForScript(table1.PrimaryKey));
+                result2.Add(PkForScript(table2.PrimaryKey));
+                if (!table1.PrimaryKey.Equals(table2.PrimaryKey))
                 {
                     difs.Add(GetCurrentLine(result1));
                     PkDif = true;
                 }
             }
-            else 
+            else if (pkFlag1 || pkFlag2)
             {
                 PkDif = true;
                 if (pkFlag1)
                 {
-                    result1.Add($",{Environment.NewLine}{new string(' ', 5)}CONSTRAINT [{pk1.IndexName}] PRIMARY KEY {pk1.Clustered} ([{String.Join("], [", new List<string>(pk1.columns.Keys).ToArray())}]){Environment.NewLine}");
+                    result1.Add(PkForScript(table1.PrimaryKey));
                     result2.Add($"{Environment.NewLine}");
                 }
                 else
                 {
-                    result2.Add($",{Environment.NewLine}{new string(' ', 5)}CONSTRAINT [{pk2.IndexName}] PRIMARY KEY {pk2.Clustered} ([{String.Join("], [", new List<string>(pk2.columns.Keys).ToArray())}]){Environment.NewLine}");
+                    result2.Add(PkForScript(table2.PrimaryKey));
                     result2.Add($"{Environment.NewLine}");
                 }
                 difs.Add(GetCurrentLine(result1));
             }
-            result1.Add($") ON [PRIMARY]{Environment.NewLine}GO{Environment.NewLine}");
-            result2.Add($") ON [PRIMARY]{Environment.NewLine}GO{Environment.NewLine}");
+            else 
+            {
+                result1.Add($"{Environment.NewLine}");
+                result2.Add($"{Environment.NewLine}");
+            }
+            result1.Add($") {Environment.NewLine}GO{Environment.NewLine}");
+            result2.Add($") {Environment.NewLine}GO{Environment.NewLine}");
 
             /// индексы
             /// 
@@ -362,10 +357,6 @@ namespace DBComparerLibrary
                     {
                         if (table1.indexes.ContainsKey(index))
                         {
-                            if (table1.indexes[index].IsPrimary)
-                            {
-                                continue;
-                            }
                             string ss = createIndexStr(table1.indexes[index], tn);
                             if (ss.Length > 0)
                                 result1.Add(ss);
@@ -373,13 +364,10 @@ namespace DBComparerLibrary
                                 continue;
                             result2.Add($"{Environment.NewLine}");
                             result2.Add($"{Environment.NewLine}");
+                            difs.Add(GetCurrentLine(result1));
                         }
                         else
                         {
-                            if (table2.indexes[index].IsPrimary)
-                            {
-                                continue;
-                            }
                             string ss = createIndexStr(table2.indexes[index], tn);
                             if (ss.Length > 0)
                                 result2.Add(ss);
@@ -387,8 +375,8 @@ namespace DBComparerLibrary
                                 continue;
                             result1.Add($"{Environment.NewLine}");
                             result1.Add($"{Environment.NewLine}");
+                            difs.Add(GetCurrentLine(result2));
                         }
-                        difs.Add(GetCurrentLine(result1)-1);
 
                     }
                 }
@@ -397,15 +385,9 @@ namespace DBComparerLibrary
                 {
                     if (defIndexName.Contains(indexKey))
                         continue;
-                    if (table1.indexes[indexKey].IsPrimary)
-                    {
-                        continue;
-                    }
-                    if (!table1.indexes[indexKey].Equals(table2.indexes[indexKey]))
-                    {//
-                        difs.Add(GetCurrentLine(result1));
-                    }
                     string ss = createIndexStr(table1.indexes[indexKey], tn);
+                    
+                    
                     if (ss.Length > 0)
                         result1.Add(ss);
                     else
@@ -415,6 +397,10 @@ namespace DBComparerLibrary
                         result2.Add(ss);
                     else
                         result2.Add(Environment.NewLine);
+                    if (!table1.indexes[indexKey].Equals(table2.indexes[indexKey]))
+                    {//
+                        difs.Add(GetCurrentLine(result1));
+                    }
 
                 }
 
@@ -438,21 +424,11 @@ namespace DBComparerLibrary
                     {
                         if (table1.foreignKeys.ContainsKey(fk))
                         {
-                            if (0 == table1.foreignKeys[fk].refs.Count)
-                                continue;
-                            else
-                            {
-                                result1.Add(FKForScript(table1.foreignKeys[fk], tn));
-                            }
+                            result1.Add(FKForScript(table1.foreignKeys[fk], tn));
                         }
                         else
                         {
-                            if (0 == table2.foreignKeys[fk].refs.Count)
-                                continue;
-                            else
-                            {
-                                result2.Add(FKForScript(table2.foreignKeys[fk], tn));
-                            }
+                            result2.Add(FKForScript(table2.foreignKeys[fk], tn));
                         }
                         difs.Add(GetCurrentLine(result1));
 
@@ -461,21 +437,20 @@ namespace DBComparerLibrary
                 //теперь выведем остальные индексы
                 foreach (var fk in table1.foreignKeys.Keys)
                 {
+                    if (defFKName.Contains(fk))
+                        continue;
+                   
                     
                     result1.Add(FKForScript(table1.foreignKeys[fk], tn));
-                    result2.Add(FKForScript(table1.foreignKeys[fk], tn));
+                    result2.Add(FKForScript(table2.foreignKeys[fk], tn));
                     if (!table1.foreignKeys[fk].Equals(table2.foreignKeys[fk]))
                     {//
-                        difs.Add(GetCurrentLine(result1)-1);
+                        difs.Add(GetCurrentLine(result1));
                     }
                 }
             }
 
-
-
-
-
-                StringBuilder statusText = new StringBuilder();
+            StringBuilder statusText = new StringBuilder();
             statusText.Append("Таблицы различаются ");
             if (ColumnDif)
                 statusText.Append("столбцами");
@@ -502,23 +477,24 @@ namespace DBComparerLibrary
         }
         private static int GetCurrentLine(List<string> list) 
         {
-            string dffgdfg = string.Join("", list.ToArray());
-            string ddfdd = Environment.NewLine;
-            int ss = dffgdfg.Split(new string[] { ddfdd }, StringSplitOptions.None).Length - 1;
-            int dfgd = new Regex(ddfdd).Matches(dffgdfg).Count;
-            int count = (dffgdfg.Length - dffgdfg.Replace(ddfdd, "").Length) / ddfdd.Length;
-
-            return new Regex(ddfdd).Matches(dffgdfg).Count-1;
+            int minusLine = 0;
+            if (list[list.Count - 1].EndsWith("GO" + Environment.NewLine))
+                minusLine = 2;
+            else if (list[list.Count - 1].EndsWith(Environment.NewLine))
+                minusLine = 1;
+            else
+                minusLine = 0;
+            return new Regex(Environment.NewLine).Matches(string.Join("", list.ToArray())).Count - minusLine;
         }
         private static string CreateColumnStr(Column column) 
         {
             StringBuilder sb = new StringBuilder();
             sb.Append($"{new string(' ', 5)}[{column.ColumnName}] ");
-            if (column.DefaultVal.Length > 0 && 0 == column.ConstraintName.Length)
+            if (column.Definition.Length > 0)
             {
-                sb.Append($"AS {column.DefaultVal}");
+                sb.Append($"AS {column.Definition}");
             }
-            else
+            else 
             {
                 sb.Append($"{ColumnType(column)}");
 
@@ -629,7 +605,8 @@ namespace DBComparerLibrary
                 case "nvarchar":
                 case "varchar": 
                     {
-                        sb.Append($"[{column.TypeName}]({column.MaxSymb})");
+                        string len = -1 == column.MaxSymb ? "max" : column.MaxSymb.ToString();
+                        sb.Append($"[{column.TypeName}]({len})");
                     }break;
                 case "decimal": 
                     {
@@ -638,13 +615,21 @@ namespace DBComparerLibrary
                     break;
                 default: 
                     {
-                        sb.Append($"[{column.TypeName}]");
+                        string[] ut = column.TypeName.Split('.');
+                        if(ut.Length > 1)
+                            sb.Append($"[{ut[0]}].[{ut[1]}]");
+                        else
+                            sb.Append($"[{column.TypeName}]");
                     }
                     break;
             }
             if (column.CollationName.Length > 0)
             {
                 sb.Append($"{new string(' ', 3)}COLLATE {column.CollationName}");
+            }
+            if (column.IncrementValue > 0) 
+            {
+                sb.Append($" IDENTITY({column.SeedValue},{column.IncrementValue})");
             }
             if (column.IsNullable)
             {
@@ -672,10 +657,6 @@ namespace DBComparerLibrary
             string[] tn = table.TableName.Split('.');
             foreach (var index in table.indexes.Values)
             {
-                if (index.IsPrimary)
-                {
-                    continue;
-                }
                 string ss = createIndexStr(index, tn);
                 if(ss.Length > 0)
                     result.Add(ss);
@@ -687,12 +668,7 @@ namespace DBComparerLibrary
             string[] tn = table.TableName.Split('.');
             foreach (var fk in table.foreignKeys.Values)
             {
-                if (0 == fk.refs.Count)
-                    continue;
-                else 
-                {
-                    result.Add(FKForScript(fk,tn));
-                }
+                result.Add(FKForScript(fk,tn));
             }
         }
         private static string IndexColumnsForScript(Index index) 
@@ -711,14 +687,16 @@ namespace DBComparerLibrary
         }
         private static string FKForScript(ForeignKey fk, string[] tn) 
         {
-            List<string> fk_col = new List<string>();
-            List<string> pk_col = new List<string>();
-            foreach (var refs in fk.refs)
+            StringBuilder sb = new StringBuilder();
+            if ("NO_ACTION" != fk.deleteRef)
             {
-                fk_col.Add(refs.fkColumnName);
-                pk_col.Add(refs.pkColumnName);
+                sb.Append($"ON DELETE {fk.deleteRef} ");
             }
-            return $"ALTER TABLE [{tn[0]}].[{tn[1]}] ADD CONSTRAINT [{fk.FKName}] FOREIGN KEY ([{ String.Join("], [", fk_col.ToArray())}]) REFERENCES [{String.Join("].[", fk.refs[0].prTableName.Split('.'))}] ([{ String.Join("], [", pk_col.ToArray())}]){Environment.NewLine}GO{Environment.NewLine}";
+            if ("NO_ACTION" != fk.updateRef)
+            {
+                sb.Append($"ON UPDATE {fk.updateRef} ");
+            }
+            return $"ALTER TABLE [{tn[0]}].[{tn[1]}] ADD CONSTRAINT [{fk.FKName}] FOREIGN KEY ([{ String.Join("], [", fk.fkColumnName.ToArray())}]) REFERENCES [{String.Join("].[", fk.prTableName.Split('.'))}] ([{ String.Join("], [", fk.pkColumnName.ToArray())}]) {sb.ToString()}{Environment.NewLine}GO{Environment.NewLine}";
         }
 
     }

@@ -72,43 +72,41 @@ from sys.schemas s
 select schema_name(tab.schema_id) + '.' + tab.name as table_name, 
     col.name as column_name, 
     case 
-		when t.is_user_defined = 1 then s.name + '.' + type_name(col.user_type_id) 
-		else type_name(col.user_type_id)
-		end as data_type,   
+    when t.is_user_defined = 1 then s.name + '.' + type_name(col.user_type_id) 
+    else type_name(col.user_type_id)
+    end as data_type,   
     col.max_length,
     col.precision,
-	col.scale as scale,
-	columnproperty(col.object_id, col.name, 'Precision') as maxSymbols,
-	col.is_nullable as isnullable,
-	t.collation_name as collation_name
+  col.scale as scale,
+  columnproperty(col.object_id, col.name, 'Precision') as maxSymbols,
+  col.is_nullable as isnullable,
+  t.collation_name as collation_name,
+  case when sk.seed_value is NULL then 0
+        else sk.seed_value end as seed_value,
+  case when sk.increment_value is NULL then 0
+        else sk.increment_value end as increment_value,
+    c.definition as definit,
+  AAA.def as defaul,
+  AAA.constraint_name as DF_Name
 from sys.tables as tab
     inner join sys.columns as col on tab.object_id = col.object_id
     left join sys.types as t on col.user_type_id = t.user_type_id
-	join sys.schemas s on t.schema_id = s.schema_id";
-        }
-
-        public static string GetSQLTables_WithDefaultsAndComputed()
-        {
-            return @"
-SELECT SCHEMA_NAME(o.schema_id) + '.' + OBJECT_NAME(c.object_id) as table_name, 
-    c.name AS column_name, 
-    c.definition as def,
-	'' as constraint_name
-FROM sys.computed_columns c
-  JOIN sys.objects o ON o.object_id = c.object_id
-union all
-select schema_name(t.schema_id) + '.' + t.name table_name,
-    col.name as column_name,
-    con.definition as def,
-    con.name as constraint_name
-from sys.default_constraints con
-    left outer join sys.objects t
+  inner join sys.schemas as s on t.schema_id = s.schema_id
+  left join sys.identity_columns as sk on tab.object_id = sk.object_id and col.name = sk.name
+  left join sys.objects o ON o.object_id = tab.object_id
+  left join sys.computed_columns c ON o.object_id = c.object_id and c.name = col.name
+  left join 
+  (select schema_name(t.schema_id) + '.' + t.name table_name,
+    col.name as column_name, con.definition as def, con.name as constraint_name
+  from sys.default_constraints con
+    left  join sys.objects t
         on con.parent_object_id = t.object_id
-    left outer join sys.all_columns col
+    left  join sys.all_columns col
         on con.parent_column_id = col.column_id
         and con.parent_object_id = col.object_id
-";
+    ) as AAA ON AAA.table_name = schema_name(tab.schema_id) + '.' + tab.name and AAA.column_name = col.name";
         }
+
 
         public static string GetSQLIndexes()
         {
@@ -119,17 +117,18 @@ select schema_name(tab.schema_id) + '.'  + tab.name as table_view,
 	pk.type as index_type,
 	pk.is_unique as isunique,
 	pk.is_primary_key as PKtype,
-	ic.is_descending_key,
+    ic.is_descending_key,
 	pk.type_desc as clust
-from sys.tables tab
-    inner join sys.indexes pk
+from sys.indexes pk
+    inner join sys.tables tab
         on tab.object_id = pk.object_id 
     inner join sys.index_columns ic
         on ic.object_id = pk.object_id
         and ic.index_id = pk.index_id
     inner join sys.columns col
         on pk.object_id = col.object_id
-        and col.column_id = ic.column_id";
+        and col.column_id = ic.column_id
+where pk.type in (1,2)";
         }
 
         public static string GetSQLForeignKeys()
