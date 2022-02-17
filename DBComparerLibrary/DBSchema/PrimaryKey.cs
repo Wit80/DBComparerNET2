@@ -9,7 +9,7 @@ namespace DBComparerLibrary.DBSchema
         public string PkName { get; }
         public string Clustered { get; }
         public Dictionary<string, bool> columns;
-        
+
 
         public PrimaryKey(string pkName, string clustered, Dictionary<string, bool> columns)
         {
