@@ -35,9 +35,13 @@
             this.backgroundWorker2 = new System.ComponentModel.BackgroundWorker();
             this.backgroundWorker3 = new System.ComponentModel.BackgroundWorker();
             this.backgroundWorker4 = new System.ComponentModel.BackgroundWorker();
-            this.dbConnectionPanel2 = new DBComparer.DBConnectionPanel();
+            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.dbConnectionPanel1 = new DBComparer.DBConnectionPanel();
+            this.dbConnectionPanel2 = new DBComparer.DBConnectionPanel();
             this.groupBox1.SuspendLayout();
+            this.splitContainer1.Panel1.SuspendLayout();
+            this.splitContainer1.Panel2.SuspendLayout();
+            this.splitContainer1.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -45,8 +49,7 @@
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox1.Controls.Add(this.dbConnectionPanel2);
-            this.groupBox1.Controls.Add(this.dbConnectionPanel1);
+            this.groupBox1.Controls.Add(this.splitContainer1);
             this.groupBox1.Controls.Add(this.butCompare);
             this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
@@ -56,6 +59,8 @@
             // 
             // butCompare
             // 
+            this.butCompare.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.butCompare.Location = new System.Drawing.Point(251, 181);
             this.butCompare.Name = "butCompare";
             this.butCompare.Size = new System.Drawing.Size(109, 23);
@@ -74,21 +79,39 @@
             this.backgroundWorker2.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker2_DoWork);
             this.backgroundWorker2.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker2_RunWorkerCompleted);
             // 
-            // dbConnectionPanel2
+            // splitContainer1
             // 
-            this.dbConnectionPanel2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.dbConnectionPanel2.Location = new System.Drawing.Point(320, 10);
-            this.dbConnectionPanel2.Name = "dbConnectionPanel2";
-            this.dbConnectionPanel2.Size = new System.Drawing.Size(308, 165);
-            this.dbConnectionPanel2.TabIndex = 3;
+            this.splitContainer1.Location = new System.Drawing.Point(6, 19);
+            this.splitContainer1.Name = "splitContainer1";
+            // 
+            // splitContainer1.Panel1
+            // 
+            this.splitContainer1.Panel1.Controls.Add(this.dbConnectionPanel1);
+            // 
+            // splitContainer1.Panel2
+            // 
+            this.splitContainer1.Panel2.Controls.Add(this.dbConnectionPanel2);
+            this.splitContainer1.Size = new System.Drawing.Size(632, 156);
+            this.splitContainer1.SplitterDistance = 210;
+            this.splitContainer1.TabIndex = 4;
             // 
             // dbConnectionPanel1
             // 
-            this.dbConnectionPanel1.Location = new System.Drawing.Point(6, 10);
+            this.dbConnectionPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dbConnectionPanel1.Location = new System.Drawing.Point(0, 0);
             this.dbConnectionPanel1.Name = "dbConnectionPanel1";
-            this.dbConnectionPanel1.Size = new System.Drawing.Size(308, 165);
+            this.dbConnectionPanel1.Size = new System.Drawing.Size(210, 156);
             this.dbConnectionPanel1.TabIndex = 2;
+            // 
+            // dbConnectionPanel2
+            // 
+            this.dbConnectionPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dbConnectionPanel2.Location = new System.Drawing.Point(0, 0);
+            this.dbConnectionPanel2.Name = "dbConnectionPanel2";
+            this.dbConnectionPanel2.Size = new System.Drawing.Size(418, 156);
+            this.dbConnectionPanel2.TabIndex = 3;
             // 
             // ConnectionForm
             // 
@@ -105,6 +128,9 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Новая схема сравнения БД";
             this.groupBox1.ResumeLayout(false);
+            this.splitContainer1.Panel1.ResumeLayout(false);
+            this.splitContainer1.Panel2.ResumeLayout(false);
+            this.splitContainer1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -119,5 +145,6 @@
         private DBConnectionPanel dbConnectionPanel1;
         private DBConnectionPanel dbConnectionPanel2;
         private System.ComponentModel.BackgroundWorker backgroundWorker4;
+        private System.Windows.Forms.SplitContainer splitContainer1;
     }
 }

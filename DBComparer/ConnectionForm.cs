@@ -12,9 +12,7 @@ namespace DBComparer
         public ConnectionForm()
         {
             InitializeComponent();
-
-            
-
+            splitContainer1.SplitterDistance = splitContainer1.Size.Width / 2;
         }
         private const string DBListNoLoaded = "Список баз данных не загружен";
         public string ConnectionString1 { get { return connString1; }  }        

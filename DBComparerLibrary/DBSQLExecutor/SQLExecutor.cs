@@ -15,6 +15,7 @@ namespace DBComparerLibrary.DBSQLExecutor
             {
                 adapter.Fill(dsRet);
                 conn.Close();
+                conn.Dispose();
                 return dsRet;
             }
             catch (InvalidOperationException ex) 
@@ -27,7 +28,7 @@ namespace DBComparerLibrary.DBSQLExecutor
             }
         }
 
-        public DataSet ExecuteSQL(SqlConnection conn, string sSQL1, string sSQL2, string sSQL3, string sSQL4) 
+        public DataSet ExecuteSQL(SqlConnection conn, string sSQL1, string sSQL2, string sSQL3) 
         {
             DataSet dsRet = new DataSet();
             try
@@ -35,12 +36,11 @@ namespace DBComparerLibrary.DBSQLExecutor
                 SqlDataAdapter adapter1 = new SqlDataAdapter(sSQL1, conn);
                 SqlDataAdapter adapter2 = new SqlDataAdapter(sSQL2, conn);
                 SqlDataAdapter adapter3 = new SqlDataAdapter(sSQL3, conn); 
-                SqlDataAdapter adapter4 = new SqlDataAdapter(sSQL4, conn);
                 adapter1.Fill(dsRet,"Table1");
                 adapter2.Fill(dsRet,"Table2");
                 adapter3.Fill(dsRet,"Table3");
-                adapter4.Fill(dsRet,"Table4");
                 conn.Close();
+                conn.Dispose();
                 return dsRet;
             }
             catch (InvalidOperationException ex)

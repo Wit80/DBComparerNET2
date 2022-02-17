@@ -7,16 +7,17 @@ namespace DBComparerLibrary.DBSchema
    
     public class Table : IEquatable<Table>
     {
-        public Table(string tableName, Dictionary<string, Column> columns, Dictionary<string, Index> indexes, Dictionary<string, ForeignKey> fk)
+        public Table(string tableName, Dictionary<string, Column> columns, Dictionary<string, Index> indexes, Dictionary<string, ForeignKey> fk,PrimaryKey pk)
         {
             TableName = tableName.Trim();
             this.columns = columns;
             this.indexes = indexes;
             this.foreignKeys = fk;
+            PrimaryKey = pk;
         }
 
         public string TableName { get; }
-
+        public PrimaryKey PrimaryKey { get; }
         public Dictionary<string, Column> columns { get; }
         public Dictionary<string, Index> indexes { get; }
         public Dictionary<string, ForeignKey> foreignKeys { get; }
@@ -25,7 +26,8 @@ namespace DBComparerLibrary.DBSchema
             if (other == null)
                 return false;
 
-            return Comparer.DictEquals(this.columns, other.columns) &&
+            return PrimaryKey.Equals(other.PrimaryKey) &&
+                Comparer.DictEquals(this.columns, other.columns) &&
                 Comparer.DictEquals(this.indexes, other.indexes) &&
                 Comparer.DictEquals(this.foreignKeys, other.foreignKeys) &&
                 Comparer.CompareStrings(this.TableName, other.TableName);
