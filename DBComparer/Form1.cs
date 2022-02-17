@@ -22,7 +22,7 @@ namespace DBComparer
         private static Color colorDB1 = Color.Blue;    // структура есть только в DB1 
         private static Color colorDiferentIntern = Color.Gray; // структура есть в обоих БД, но их внутренняя структура отличается
         private static Color colorEqual = Color.Black; // одинаковые
-        private string regExpr = @"CREATE|TABLE|CONSTRAINT|DEFAULT|PRIMARY KEY|CLUSTERED|NONCLUSTERED|INDEX| ON |GO|ALTER|SCHEMA|VIEW|SELECT|FROM|UNIQUE|AUTHORIZATION| AS ";
+        private string regExpr = @"CREATE|DELETE|IDENTITY|CASCADE|TABLE|ASC|CONSTRAINT| ADD | FOREIGN KEY |DEFAULT|PRIMARY KEY|CLUSTERED|NONCLUSTERED|INDEX| ON |GO|ALTER|SCHEMA|VIEW|SELECT|FROM|UNIQUE|AUTHORIZATION| AS ";
         private string regExprGray = @"NOT NULL| NULL";
         public Form1()
         {
@@ -227,7 +227,6 @@ namespace DBComparer
 
         }
 
-
         private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
             richTextBox1.Text = "";
@@ -242,7 +241,6 @@ namespace DBComparer
                 richTextBox1.Text = string.Join("", list.script1.ToArray());
                 richTextBox2.Text = string.Join("", list.script2.ToArray());
 
-                
                 // выделим ключевые слова
                 MarkKeyWords(richTextBox1, regExpr, Color.Blue);
                 MarkKeyWords(richTextBox2, regExpr, Color.Blue);
@@ -251,9 +249,6 @@ namespace DBComparer
                 // выделим отличающиеся строки
                 MarkStrings(richTextBox1,list.difs);
                 MarkStrings(richTextBox2, list.difs);
-
-
-
 
             }
             catch (ComparerException ex)
@@ -264,7 +259,6 @@ namespace DBComparer
             {
                 MessageBox.Show(ex.Message, "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
         }
 
         private void MarkStrings(RichTextBox rtb, List<int> nums) 

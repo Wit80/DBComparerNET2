@@ -99,7 +99,7 @@ namespace DBComparerLibrary
                     o1 != null &&
                     o1.Equals(o2,StringComparison.OrdinalIgnoreCase);
         }
-        public static Dictionary<CompareItogEnum, List<string>> dbItemComtare<TKey, TValue>(IDictionary<string, TValue> items1, IDictionary<string, TValue> items2)
+        public static Dictionary<CompareItogEnum, List<string>> dbItemCompare<TKey, TValue>(IDictionary<string, TValue> items1, IDictionary<string, TValue> items2)
             where TKey : IEquatable<string>
             where TValue : IEquatable<TValue>
         {

@@ -7,7 +7,8 @@ namespace DBComparerLibrary.DBSchema
     
     public class Column : IEquatable<Column>
     {
-        public Column(string columnName, string typeName, int maxLength, int precision, int scale, int maxSymb, bool isNullable, string definition = "", string DF_name = "", string collation = "")
+        public Column(string columnName, string typeName, int maxLength, int precision, int scale, int maxSymb,
+            bool isNullable, string definition = "", string DF_name = "", string collation = "", int seed = 0, int increment = 0, string def = "")
         {
             ColumnName = columnName.Trim();
             TypeName = typeName.Trim();
@@ -19,6 +20,9 @@ namespace DBComparerLibrary.DBSchema
             DefaultVal = definition.Trim();
             ConstraintName = DF_name.Trim();
             CollationName = collation.Trim();
+            SeedValue = seed;
+            IncrementValue = increment;
+            Definition = def;
         }
 
         public string ColumnName { get; }
@@ -31,6 +35,9 @@ namespace DBComparerLibrary.DBSchema
         public string DefaultVal { get; }
         public string ConstraintName { get; }
         public string CollationName { get; }
+        public int SeedValue { get; }
+        public int IncrementValue { get; }
+        public string Definition { get; }
 
         public bool Equals(Column other)
         {
@@ -42,10 +49,13 @@ namespace DBComparerLibrary.DBSchema
                 this.Scale.Equals(other.Scale) &&
                 this.MaxSymb.Equals(other.MaxSymb) &&
                 this.IsNullable.Equals(other.IsNullable) &&
+                this.SeedValue.Equals(other.SeedValue) &&
+                this.IncrementValue.Equals(other.IncrementValue) &&
                 Comparer.CompareStrings(this.ColumnName, other.ColumnName) &&
                 Comparer.CompareStrings(this.DefaultVal, other.DefaultVal) &&
                 Comparer.CompareStrings(this.ConstraintName, other.ConstraintName) &&
                 Comparer.CompareStrings(this.CollationName, other.CollationName) &&
+                Comparer.CompareStrings(this.Definition, other.Definition) &&
                 Comparer.CompareStrings(this.TypeName, other.TypeName);
         }
     }

@@ -43,9 +43,9 @@
     <Compile Include="DBSchema\Column.cs" />
     <Compile Include="DBSchema\DataBase.cs" />
     <Compile Include="DBSchema\ForeignKey.cs" />
-    <Compile Include="DBSchema\ForeignKeyRefs.cs" />
     <Compile Include="DBSchema\Index.cs" />
     <Compile Include="DBSchema\IndexTypeEnum.cs" />
+    <Compile Include="DBSchema\PrimaryKey.cs" />
     <Compile Include="DBSchema\Schema.cs" />
     <Compile Include="DBSchema\SQLs.cs" />
     <Compile Include="DBSchema\SQLTableItemEnum.cs" />
