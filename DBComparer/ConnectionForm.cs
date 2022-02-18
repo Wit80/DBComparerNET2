@@ -24,32 +24,7 @@ namespace DBComparer
         private string connString1 { get; set; }
         private string connString2 { get; set; }
 
-        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
-        {
-            e.Result = executeGetDBs(e);
-        }
-        
-        private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-        }
-
-
-        private void backgroundWorker2_DoWork(object sender, DoWorkEventArgs e)
-        {
-            e.Result = executeGetDBs(e);
-        }
-
-        private void backgroundWorker2_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            
-        }
-        private List<string> executeGetDBs(DoWorkEventArgs e)
-        {
-            Dictionary<string, string> arguments = e.Argument as Dictionary<string, string>;
-            return SQLExecutor.GetDbsFromServer(ConncetionString.GetConnectionStringForDBList(Convert.ToBoolean(arguments["IS"]), server: arguments["Serv"], userName: arguments["Login"], password: arguments["Pass"]));
-        }
-
-
+      
         private void butCompare_Click(object sender, EventArgs e)
         {
             db1 = false;
@@ -79,8 +54,6 @@ namespace DBComparer
             {
                 MessageBox.Show($"Ошибка {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            
-
             
         }
         private bool TestConnection(string connString) 
