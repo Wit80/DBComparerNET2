@@ -159,6 +159,8 @@ namespace DBComparer
             {
                 schReturn.Add(reader[0].ToString());
             }
+            _sqlConnection.Close();
+            _sqlConnection.Dispose();
             return schReturn;
         }
     }

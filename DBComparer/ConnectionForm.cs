@@ -13,7 +13,11 @@ namespace DBComparer
         {
             InitializeComponent();
             splitContainer1.SplitterDistance = splitContainer1.Size.Width / 2;
+            pictureBox1.Visible = false;
+            pictureBox2.Visible = false;
         }
+        private bool db1 = false;
+        private bool db2 = false;
         private const string DBListNoLoaded = "Список баз данных не загружен";
         public string ConnectionString1 { get { return connString1; }  }        
         public string ConnectionString2 { get { return connString2; } }
@@ -48,10 +52,8 @@ namespace DBComparer
 
         private void butCompare_Click(object sender, EventArgs e)
         {
-            Progress progress = new Progress();
-            progress.StartPosition = FormStartPosition.CenterScreen;
-
-            progress.Show();
+            db1 = false;
+            db2 = false;
             try
             {
                 if (!CheckConnectionData(dbConnectionPanel1.Connection))
@@ -63,32 +65,23 @@ namespace DBComparer
                 {
                     return;
                 }
-                //проверим корректность строк подключения
                 connString1 = ConncetionString.GetConnectionString(dbConnectionPanel1.Connection.IsUserPasswordAutentification, dbConnectionPanel1.Connection.ServerName,
                     dbConnectionPanel1.Connection.Login, dbConnectionPanel1.Connection.Password, dbConnectionPanel1.Connection.DatabaseName);
                 connString2 = ConncetionString.GetConnectionString(dbConnectionPanel2.Connection.IsUserPasswordAutentification, dbConnectionPanel2.Connection.ServerName,
-                    dbConnectionPanel2.Connection.Login, dbConnectionPanel2.Connection.Password, dbConnectionPanel2.Connection.DatabaseName); ;
-                if (!TestConnection(connString1))
-                {
-                    MessageBox.Show($"Нет связи с левой БД! Строка подключения {connString1}", "Ошибка подключения", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-                if (!TestConnection(connString2))
-                {
-                    MessageBox.Show($"Нет связи с правой БД! Строка подключения {connString2}", "Ошибка подключения", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
+                    dbConnectionPanel2.Connection.Login, dbConnectionPanel2.Connection.Password, dbConnectionPanel2.Connection.DatabaseName); 
+                this.backgroundWorker3.RunWorkerAsync(connString1);
+                this.backgroundWorker4.RunWorkerAsync(connString2);
+                pictureBox1.Visible = true;
+                pictureBox2.Visible = true;
+
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            finally 
-            {
-                progress.Close();
-            }
+            
 
-            DialogResult = DialogResult.OK;
+            
         }
         private bool TestConnection(string connString) 
         {
@@ -106,6 +99,11 @@ namespace DBComparer
             {
                 
                 return false;
+            }
+            finally 
+            { 
+                sqlConn.Close();
+                sqlConn.Dispose();
             }
             return true;
         }
@@ -137,5 +135,53 @@ namespace DBComparer
             return true;
         }
 
+        private void backgroundWorker3_DoWork(object sender, DoWorkEventArgs e)
+        {
+            e.Result = TestConnection(e.Argument as string);
+
+        }
+
+        private void backgroundWorker3_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            pictureBox1.Visible = false;
+            if (e.Error != null)
+            {
+                MessageBox.Show($"Нет связи с левой БД! Строка подключения {connString1}", "Ошибка подключения", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (!(bool)e.Result)
+            {// информации нет
+                MessageBox.Show($"Нет связи с левой БД! Строка подключения {connString1}", "Ошибка подключения", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            db1 = true;
+            if (db2)
+                DialogResult = DialogResult.OK;
+        }
+
+        private void backgroundWorker4_DoWork(object sender, DoWorkEventArgs e)
+        {
+            e.Result = TestConnection(e.Argument as string);
+        }
+
+        private void backgroundWorker4_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            pictureBox2.Visible = false;
+            if (e.Error != null)
+            {
+                MessageBox.Show($"Нет связи с правой БД! Строка подключения {connString2}", "Ошибка подключения", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (!(bool)e.Result)
+            {// информации нет
+                MessageBox.Show($"Нет связи с правой БД! Строка подключения {connString2}", "Ошибка подключения", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            db2 = true;
+            if(db1)
+                DialogResult = DialogResult.OK;
+        }
     }
 }

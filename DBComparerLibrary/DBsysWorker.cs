@@ -101,34 +101,34 @@ namespace DBComparerLibrary
             foreach (DataRow dr in dsScript.Tables[0].Rows)
             {
                 if (!scripts.ContainsKey(dr[0].ToString()))
-                    scripts.Add(dr[0].ToString(), dr[1].ToString());
+                    scripts.Add(dr["view_name"].ToString(), dr["definition"].ToString());
             }
             SortedDictionary<string, View> dictRet = new SortedDictionary<string, View>(StringComparer.InvariantCultureIgnoreCase);
             foreach (DataRow dr in dsColums.Tables[0].Rows)
             {
-                string SchemaView = dr[0].ToString();
+                string SchemaView = dr["view_name"].ToString();
                 if (dictRet.ContainsKey(SchemaView))
                 {
                     View tmpV = dictRet[SchemaView];
-                    if (dr[9].ToString().Length > 0) 
+                    if (dr["referenced_entity_name"].ToString().Length > 0) 
                     {
-                        tmpV.tables.Add(dr[9].ToString());
+                        tmpV.tables.Add(dr["referenced_entity_name"].ToString());
                     }
-                    else if (!tmpV.columns.ContainsKey(dr[1].ToString()))
+                    else if (!tmpV.columns.ContainsKey(dr["column_name"].ToString()))
                     {
-                        tmpV.columns.Add(dr[1].ToString(), new Column(dr[1].ToString(), dr[2].ToString(), Convert.ToInt32(dr[3]),
-                                       Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), 
-                                       Convert.ToBoolean(dr[7]),"","",dr[8].ToString()));
+                        tmpV.columns.Add(dr["column_name"].ToString(), new Column(dr["column_name"].ToString(), dr["data_type"].ToString(), Convert.ToInt32(dr["max_len"]),
+                                       Convert.ToInt32(dr["precision"]), Convert.ToInt32(dr["scale"]), Convert.ToInt32(dr["maxSymbols"]), 
+                                       Convert.ToBoolean(dr["isnullable"]),"",dr["collation_name"].ToString()));
                     }
                 }
                 else
                 {
-                    if (dr[9].ToString().Length > 0)
+                    if (dr["referenced_entity_name"].ToString().Length > 0)
                     {
                         dictRet.Add(SchemaView,
                             new View(SchemaView, scripts[SchemaView],
                                new Dictionary<string, Column>(StringComparer.InvariantCultureIgnoreCase)
-                               , new List<string>() { dr[9].ToString()}));
+                               , new List<string>() { dr["referenced_entity_name"].ToString()}));
                     }
                     else
                     {
@@ -136,9 +136,9 @@ namespace DBComparerLibrary
                             new View(SchemaView, scripts[SchemaView],
                                new Dictionary<string, Column>(StringComparer.InvariantCultureIgnoreCase)
                                {
-                               { dr[1].ToString(), new Column(dr[1].ToString(), dr[2].ToString(), Convert.ToInt32(dr[3]),
-                                       Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7]),
-                                       "","",dr[8].ToString()) }
+                               { dr["column_name"].ToString(), new Column(dr["column_name"].ToString(), dr["data_type"].ToString(), Convert.ToInt32(dr["max_len"]),
+                                       Convert.ToInt32(dr["precision"]), Convert.ToInt32(dr["scale"]), Convert.ToInt32(dr["maxSymbols"]), Convert.ToBoolean(dr["isnullable"]),
+                                       "",dr["collation_name"].ToString()) }
                                }, new List<string>()));
                     }
                 }
@@ -153,7 +153,7 @@ namespace DBComparerLibrary
             {
                 if (!dictRet.ContainsKey(dr[0].ToString()))
                 {
-                    dictRet.Add(dr[0].ToString(), new Schema(sch_Name: dr[0].ToString(), sch_Owner: dr[1].ToString()));
+                    dictRet.Add(dr["schema_name"].ToString(), new Schema(sch_Name: dr["schema_name"].ToString(), sch_Owner: dr["schema_owner"].ToString()));
                 }
             }
             return dictRet;
@@ -165,38 +165,38 @@ namespace DBComparerLibrary
             Dictionary<string, PrimaryKey> dictPK = new Dictionary<string, PrimaryKey>(StringComparer.InvariantCultureIgnoreCase);
             foreach (DataRow dr in dsTablesItog.Tables[1].Rows)
             {
-                string SchemaTable = dr[0].ToString();
-                if (1 == Convert.ToInt32(dr[5]))
+                string SchemaTable = dr["table_view"].ToString();
+                if (1 == Convert.ToInt32(dr["PKtype"]))
                 { //это PK
                     if (dictPK.ContainsKey(SchemaTable))
                     {
-                        if (dictPK[SchemaTable].columns.ContainsKey(dr[2].ToString()))
+                        if (dictPK[SchemaTable].columns.ContainsKey(dr["column_name"].ToString()))
                             continue;
                         else 
                         {
-                            dictPK[SchemaTable].columns.Add(dr[2].ToString(), Convert.ToBoolean(dr[6]));
+                            dictPK[SchemaTable].columns.Add(dr["column_name"].ToString(), Convert.ToBoolean(dr["is_descending_key"]));
                         }
                     }
                     else 
                     {
-                        dictPK.Add(SchemaTable, new PrimaryKey(dr[1].ToString(), dr[7].ToString(),
-                            new Dictionary<string, bool>(StringComparer.InvariantCultureIgnoreCase) { { dr[2].ToString(), Convert.ToBoolean(dr[6]) } }));
+                        dictPK.Add(SchemaTable, new PrimaryKey(dr["index_name"].ToString(), dr["clust"].ToString(),
+                            new Dictionary<string, bool>(StringComparer.InvariantCultureIgnoreCase) { { dr["column_name"].ToString(), Convert.ToBoolean(dr["is_descending_key"]) } }));
                     }
                 }
                 else
                 {
                     if (dictIndexes.ContainsKey(SchemaTable))
                     {
-                        if (!dictIndexes[SchemaTable].ContainsKey(dr[1].ToString()))
+                        if (!dictIndexes[SchemaTable].ContainsKey(dr["index_name"].ToString()))
                         {
-                            dictIndexes[SchemaTable].Add(dr[1].ToString(),
-                                new Index(dr[1].ToString(), Convert.ToInt32(dr[3]), Convert.ToBoolean(dr[4]),  
-                                new Dictionary<string, bool>(StringComparer.InvariantCultureIgnoreCase) { { dr[2].ToString(), Convert.ToBoolean(dr[6]) } }, dr[7].ToString()));
+                            dictIndexes[SchemaTable].Add(dr["index_name"].ToString(),
+                                new Index(dr["index_name"].ToString(), Convert.ToInt32(dr["index_type"]), Convert.ToBoolean(dr["isunique"]),  
+                                new Dictionary<string, bool>(StringComparer.InvariantCultureIgnoreCase) { { dr["column_name"].ToString(), Convert.ToBoolean(dr["is_descending_key"]) } }, dr["clust"].ToString()));
                         }
                         else
                         {
-                            Index index = dictIndexes[SchemaTable][dr[1].ToString()];
-                            index.columns.Add(dr[2].ToString(), Convert.ToBoolean(dr[6]));
+                            Index index = dictIndexes[SchemaTable][dr["index_name"].ToString()];
+                            index.columns.Add(dr["column_name"].ToString(), Convert.ToBoolean(dr["is_descending_key"]));
                         }
                     }
                     else
@@ -206,7 +206,7 @@ namespace DBComparerLibrary
                             new Dictionary<string, Index>(StringComparer.InvariantCultureIgnoreCase)
                             {
                         { dr[1].ToString(),
-                        new Index(dr[1].ToString(), Convert.ToInt32(dr[3]), Convert.ToBoolean(dr[4]), new Dictionary<string, bool>(StringComparer.InvariantCultureIgnoreCase) { { dr[2].ToString(), Convert.ToBoolean(dr[6]) } },dr[7].ToString())
+                        new Index(dr["index_name"].ToString(), Convert.ToInt32(dr["index_type"]), Convert.ToBoolean(dr["isunique"]), new Dictionary<string, bool>(StringComparer.InvariantCultureIgnoreCase) { { dr["column_name"].ToString(), Convert.ToBoolean(dr["is_descending_key"]) } },dr["clust"].ToString())
                         }
                             });
                     }
@@ -217,31 +217,33 @@ namespace DBComparerLibrary
             Dictionary<string, Dictionary<string, ForeignKey>> dictFK = new Dictionary<string, Dictionary<string, ForeignKey>>(StringComparer.InvariantCultureIgnoreCase);
             foreach (DataRow dr in dsTablesItog.Tables[2].Rows)
             {
-                string SchemaTable = dr[1].ToString();
+                string SchemaTable = dr["foreign_table"].ToString();
                 if (dictFK.ContainsKey(SchemaTable))
                 {
                     var fkDict = dictFK[SchemaTable];
-                    if (fkDict.ContainsKey(dr[0].ToString()))
+                    if (fkDict.ContainsKey(dr["fk_constraint_name"].ToString()))
                     {//этот FK есть
-                        if (fkDict[dr[0].ToString()].fkColumnName.Contains(dr[3].ToString()) || fkDict[dr[0].ToString()].pkColumnName.Contains(dr[4].ToString()))
+                        if (fkDict[dr["fk_constraint_name"].ToString()].fkColumnName.Contains(dr["fk_column_name"].ToString()) || fkDict[dr["fk_constraint_name"].ToString()].pkColumnName.Contains(dr["pk_column_name"].ToString()))
                         {
                             continue;
                         }
-                        fkDict[dr[0].ToString()].fkColumnName.Add(dr[3].ToString());
-                        fkDict[dr[0].ToString()].pkColumnName.Add(dr[4].ToString());
+                        fkDict[dr["fk_constraint_name"].ToString()].fkColumnName.Add(dr["fk_column_name"].ToString());
+                        fkDict[dr["fk_constraint_name"].ToString()].pkColumnName.Add(dr["pk_column_name"].ToString());
                     }
                     else
                     {
-                        fkDict.Add(dr[0].ToString(), new ForeignKey(dr[0].ToString(), dr[1].ToString(), dr[2].ToString(), new List<string>() { dr[3].ToString() },
-                            new List<string>() { dr[4].ToString() }, dr[5].ToString(), dr[6].ToString()));
+                        fkDict.Add(dr["fk_constraint_name"].ToString(), new ForeignKey(dr["fk_constraint_name"].ToString(), dr["foreign_table"].ToString(), 
+                            dr["primary_table"].ToString(), new List<string>() { dr["fk_column_name"].ToString() },
+                            new List<string>() { dr["pk_column_name"].ToString() }, dr["delete_referential_action_desc"].ToString(), dr["update_referential_action_desc"].ToString()));
                     }
                 }
                 else
                 {
                     dictFK.Add(SchemaTable, new Dictionary<string, ForeignKey>(StringComparer.InvariantCultureIgnoreCase)
                         {
-                        { dr[0].ToString(), new ForeignKey(dr[0].ToString(), dr[1].ToString(), dr[2].ToString(), new List<string>() { dr[3].ToString() },
-                            new List<string>() { dr[4].ToString() }, dr[5].ToString(), dr[6].ToString())
+                        { dr["fk_constraint_name"].ToString(), new ForeignKey(dr["fk_constraint_name"].ToString(), dr["foreign_table"].ToString(), 
+                        dr["primary_table"].ToString(), new List<string>() { dr["fk_column_name"].ToString() },
+                            new List<string>() { dr["pk_column_name"].ToString() }, dr["delete_referential_action_desc"].ToString(), dr["update_referential_action_desc"].ToString())
                                 }
 
                         }
@@ -252,16 +254,18 @@ namespace DBComparerLibrary
             SortedDictionary<string, Table> dictRet = new SortedDictionary<string, Table>(StringComparer.InvariantCultureIgnoreCase);
             foreach (DataRow dr in dsTablesItog.Tables[0].Rows)
             {
-                string SchemaTable = dr[0].ToString();
-                if (dictRet.ContainsKey(dr[0].ToString()))
+                string SchemaTable = dr["table_name"].ToString();
+                if (dictRet.ContainsKey(dr["table_name"].ToString()))
                 {
                     Table tmpT = dictRet[SchemaTable];
-                    if (!tmpT.columns.ContainsKey(dr[1].ToString()))
+                    if (!tmpT.columns.ContainsKey(dr["column_name"].ToString()))
                     {
-                        tmpT.columns.Add(dr[1].ToString(),
-                            new Column(dr[1].ToString(), dr[2].ToString(), Convert.ToInt32(dr[3]),
-                                       Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7]), dr[12].ToString(),
-                                       dr[13].ToString(), dr[8].ToString(),Convert.ToInt32(dr[9]), Convert.ToInt32(dr[10]), dr[11].ToString()));
+                        tmpT.columns.Add(dr["column_name"].ToString(),
+                            new Column(dr["column_name"].ToString(), dr["data_type"].ToString(), Convert.ToInt32(dr["max_length"]),
+                                       Convert.ToInt32(dr["precision"]), Convert.ToInt32(dr["scale"]), Convert.ToInt32(dr["maxSymbols"]), 
+                                       Convert.ToBoolean(dr["isnullable"]), dr["defaul"].ToString(),
+                                       dr["collation_name"].ToString(),Convert.ToInt32(dr["seed_value"]), 
+                                       Convert.ToInt32(dr["increment_value"]), dr["definit"].ToString()));
                     }
                 }
                 else 
@@ -287,10 +291,12 @@ namespace DBComparerLibrary
                     dictRet.Add(SchemaTable,
                         new Table(SchemaTable, new Dictionary<string, Column>(StringComparer.InvariantCultureIgnoreCase)
                         {
-                            { dr[1].ToString(),
-                            new Column(dr[1].ToString(), dr[2].ToString(), Convert.ToInt32(dr[3]),
-                                       Convert.ToInt32(dr[4]), Convert.ToInt32(dr[5]), Convert.ToInt32(dr[6]), Convert.ToBoolean(dr[7]),dr[12].ToString(),
-                                       dr[13].ToString(),dr[8].ToString(),Convert.ToInt32(dr[9]), Convert.ToInt32(dr[10]),dr[11].ToString())}
+                            { dr["column_name"].ToString(),
+                            new Column(dr["column_name"].ToString(), dr["data_type"].ToString(), Convert.ToInt32(dr["max_length"]),
+                                       Convert.ToInt32(dr["precision"]), Convert.ToInt32(dr["scale"]), Convert.ToInt32(dr["maxSymbols"]), 
+                                       Convert.ToBoolean(dr["isnullable"]),dr["defaul"].ToString(),
+                                       dr["collation_name"].ToString(),Convert.ToInt32(dr["seed_value"]), 
+                                       Convert.ToInt32(dr["increment_value"]),dr["definit"].ToString())}
                             
                         }, ind, fk, pk));
                 }

@@ -546,13 +546,16 @@ namespace DBComparerLibrary
         private static List<string> ViewScript(View view)
         {//[{ String.Join("], [", pk_col.ToArray())}]
             List<string> result = new List<string>();
-            result.Add($"{view.Script}");
+            string[] tn = view.ViewName.Split('.');
+            if (0 == view.Script.Length)
+                result.Add($"CREATE VIEW  [{tn[0]}].[{tn[1]}]");
+            else
+                result.Add($"{view.Script}");
             return result;
         }
 
         private static SQLScriptsList ViewScript(View view1, View view2) 
         {
-            //TODO--
             //проверим отличающиеся столбцы
             var difColumnsName = Comparer.GetDifference(new List<string>(view1.columns.Keys), new List<string>(view2.columns.Keys));
             var difTablesName = Comparer.GetDifference(view1.tables, view2.tables);
@@ -597,7 +600,8 @@ namespace DBComparerLibrary
                     break;
                 case "datetime2": 
                     {
-                        sb.Append($"[{column.TypeName}]({column.Scale})");
+                        //sb.Append($"[{column.TypeName}]({column.Scale})");
+                        sb.Append($"[{column.TypeName}]");
                     }
                     break;
                 case "char":
@@ -643,9 +647,9 @@ namespace DBComparerLibrary
             {
                 sb.Append($"{new string(' ', 1)}ROWGUIDCOL");
             }
-            if (column.DefaultVal.Length > 0 && column.ConstraintName.Length > 0) 
+            if (column.DefaultVal.Length > 0) 
             {
-                sb.Append($"{new string(' ', 1)}CONSTRAINT [{column.ConstraintName}] {column.DefaultVal}");
+                sb.Append($"{new string(' ', 1)}CONSTRAINT DEFAULT {column.DefaultVal}");
             }
                 
             return sb.ToString();

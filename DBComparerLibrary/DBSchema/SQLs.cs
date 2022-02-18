@@ -86,8 +86,7 @@ select schema_name(tab.schema_id) + '.' + tab.name as table_name,
   case when sk.increment_value is NULL then 0
         else sk.increment_value end as increment_value,
     c.definition as definit,
-  AAA.def as defaul,
-  AAA.constraint_name as DF_Name
+  db.text as defaul
 from sys.tables as tab
     inner join sys.columns as col on tab.object_id = col.object_id
     left join sys.types as t on col.user_type_id = t.user_type_id
@@ -95,16 +94,7 @@ from sys.tables as tab
   left join sys.identity_columns as sk on tab.object_id = sk.object_id and col.name = sk.name
   left join sys.objects o ON o.object_id = tab.object_id
   left join sys.computed_columns c ON o.object_id = c.object_id and c.name = col.name
-  left join 
-  (select schema_name(t.schema_id) + '.' + t.name table_name,
-    col.name as column_name, con.definition as def, con.name as constraint_name
-  from sys.default_constraints con
-    left  join sys.objects t
-        on con.parent_object_id = t.object_id
-    left  join sys.all_columns col
-        on con.parent_column_id = col.column_id
-        and con.parent_object_id = col.object_id
-    ) as AAA ON AAA.table_name = schema_name(tab.schema_id) + '.' + tab.name and AAA.column_name = col.name";
+  left join syscomments db  with (nolock) on db.id = col.default_object_id";
         }
 
 
