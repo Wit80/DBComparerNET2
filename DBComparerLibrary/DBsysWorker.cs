@@ -118,7 +118,7 @@ namespace DBComparerLibrary
                     {
                         tmpV.columns.Add(dr["column_name"].ToString(), new Column(dr["column_name"].ToString(), dr["data_type"].ToString(), Convert.ToInt32(dr["max_len"]),
                                        Convert.ToInt32(dr["precision"]), Convert.ToInt32(dr["scale"]), Convert.ToInt32(dr["maxSymbols"]), 
-                                       Convert.ToBoolean(dr["isnullable"]),"",dr["collation_name"].ToString()));
+                                       Convert.ToBoolean(dr["isnullable"]),"","",dr["collation_name"].ToString()));
                     }
                 }
                 else
@@ -138,7 +138,7 @@ namespace DBComparerLibrary
                                {
                                { dr["column_name"].ToString(), new Column(dr["column_name"].ToString(), dr["data_type"].ToString(), Convert.ToInt32(dr["max_len"]),
                                        Convert.ToInt32(dr["precision"]), Convert.ToInt32(dr["scale"]), Convert.ToInt32(dr["maxSymbols"]), Convert.ToBoolean(dr["isnullable"]),
-                                       "",dr["collation_name"].ToString()) }
+                                       "","",dr["collation_name"].ToString()) }
                                }, new List<string>()));
                     }
                 }
@@ -263,7 +263,7 @@ namespace DBComparerLibrary
                         tmpT.columns.Add(dr["column_name"].ToString(),
                             new Column(dr["column_name"].ToString(), dr["data_type"].ToString(), Convert.ToInt32(dr["max_length"]),
                                        Convert.ToInt32(dr["precision"]), Convert.ToInt32(dr["scale"]), Convert.ToInt32(dr["maxSymbols"]), 
-                                       Convert.ToBoolean(dr["isnullable"]), dr["defaul"].ToString(),
+                                       Convert.ToBoolean(dr["isnullable"]),dr["defaul"].ToString(), dr["DF_name"].ToString(),
                                        dr["collation_name"].ToString(),Convert.ToInt32(dr["seed_value"]), 
                                        Convert.ToInt32(dr["increment_value"]), dr["definit"].ToString()));
                     }
@@ -294,7 +294,7 @@ namespace DBComparerLibrary
                             { dr["column_name"].ToString(),
                             new Column(dr["column_name"].ToString(), dr["data_type"].ToString(), Convert.ToInt32(dr["max_length"]),
                                        Convert.ToInt32(dr["precision"]), Convert.ToInt32(dr["scale"]), Convert.ToInt32(dr["maxSymbols"]), 
-                                       Convert.ToBoolean(dr["isnullable"]),dr["defaul"].ToString(),
+                                       Convert.ToBoolean(dr["isnullable"]),dr["defaul"].ToString(),dr["DF_name"].ToString(),
                                        dr["collation_name"].ToString(),Convert.ToInt32(dr["seed_value"]), 
                                        Convert.ToInt32(dr["increment_value"]),dr["definit"].ToString())}
                             

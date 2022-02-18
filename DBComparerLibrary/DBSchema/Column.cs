@@ -4,11 +4,11 @@ using System.Text;
 
 namespace DBComparerLibrary.DBSchema
 {
-    
+
     public class Column : IEquatable<Column>
     {
         public Column(string columnName, string typeName, int maxLength, int precision, int scale, int maxSymb,
-            bool isNullable, string definition = "", string collation = "", int seed = 0, int increment = 0, string def = "")
+            bool isNullable, string definition, string DF_name, string collation, int seed=0, int increment=0, string def="")
         {
             ColumnName = columnName.Trim();
             TypeName = typeName.Trim();
@@ -18,6 +18,7 @@ namespace DBComparerLibrary.DBSchema
             MaxSymb = maxSymb;
             IsNullable = isNullable;
             DefaultVal = definition.Trim();
+            ConstraintName = DF_name.Trim();
             CollationName = collation.Trim();
             SeedValue = seed;
             IncrementValue = increment;
@@ -32,6 +33,7 @@ namespace DBComparerLibrary.DBSchema
         public int MaxSymb { get; }
         public bool IsNullable { get; }
         public string DefaultVal { get; }
+        public string ConstraintName { get; }
         public string CollationName { get; }
         public int SeedValue { get; }
         public int IncrementValue { get; }
@@ -51,6 +53,7 @@ namespace DBComparerLibrary.DBSchema
                 this.IncrementValue.Equals(other.IncrementValue) &&
                 Comparer.CompareStrings(this.ColumnName, other.ColumnName) &&
                 Comparer.CompareStrings(this.DefaultVal, other.DefaultVal) &&
+                Comparer.CompareStrings(this.ConstraintName, other.ConstraintName) &&
                 Comparer.CompareStrings(this.CollationName, other.CollationName) &&
                 Comparer.CompareStrings(this.Definition, other.Definition) &&
                 Comparer.CompareStrings(this.TypeName, other.TypeName);

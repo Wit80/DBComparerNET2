@@ -86,7 +86,8 @@ select schema_name(tab.schema_id) + '.' + tab.name as table_name,
   case when sk.increment_value is NULL then 0
         else sk.increment_value end as increment_value,
     c.definition as definit,
-  db.text as defaul
+  db.text as defaul,
+  OBJECT_NAME(col.default_object_id) as DF_name
 from sys.tables as tab
     inner join sys.columns as col on tab.object_id = col.object_id
     left join sys.types as t on col.user_type_id = t.user_type_id

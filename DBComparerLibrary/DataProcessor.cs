@@ -649,7 +649,7 @@ namespace DBComparerLibrary
             }
             if (column.DefaultVal.Length > 0) 
             {
-                sb.Append($"{new string(' ', 1)}CONSTRAINT DEFAULT {column.DefaultVal}");
+                sb.Append($"{new string(' ', 1)}CONSTRAINT [{column.ConstraintName}] DEFAULT {column.DefaultVal}");
             }
                 
             return sb.ToString();
