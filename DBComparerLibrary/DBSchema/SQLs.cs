@@ -98,6 +98,7 @@ from sys.tables as tab
         }
 
 
+
         public static string GetSQLIndexes()
         {
             return @"
